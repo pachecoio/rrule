@@ -70,12 +70,34 @@ impl Frequency {
                 let next_date = current_date.add(chrono::Duration::hours(*interval as i64));
                 Some(next_date)
             },
-            Frequency::Daily { interval, by_time } => {
-                let next_date = current_date.add(chrono::Duration::days(*interval as i64));
-                Some(next_date)
-            },
+            Frequency::Daily { interval, by_time } => next_daily_event(
+                current_date, *interval, &by_time
+            ),
         }
     }
+}
+
+fn next_daily_event(current_date: &DateTime<Utc>, interval: i32, by_time: &Vec<Time>) -> Option<DateTime<Utc>> {
+    let mut next_date = current_date.add(chrono::Duration::days(interval as i64));
+
+    if !by_time.is_empty() {
+        for time in by_time {
+            let d = current_date
+                .with_hour(time.hour as u32)
+                .unwrap()
+                .with_minute(time.minute as u32)
+                .unwrap();
+            if d > *current_date {
+                return Some(d);
+            }
+        }
+
+        // No hours left in the day, so we need to add a day
+        next_date = next_date
+            .with_hour(by_time[0].hour as u32).unwrap()
+            .with_minute(by_time[0].minute as u32).unwrap();
+    }
+    Some(next_date)
 }
 
 fn validate_secondly(interval: &i32) -> Result<(), FrequencyErrors> {
@@ -331,7 +353,7 @@ mod daily_frequency {
 #[cfg(test)]
 mod daily_frequencies_by_hour {
     use std::str::FromStr;
-    use chrono::{Duration, Timelike};
+    use chrono::{Datelike, Duration, Timelike};
     use super::*;
 
     #[test]
@@ -341,7 +363,26 @@ mod daily_frequencies_by_hour {
             Time::from_str("12:00").unwrap()
         ] };
         let now = DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap();
-        let hour = Duration::hours(12);
         let next_event = f.next_event(&now).unwrap();
+        assert_eq!(next_event.day(), now.day());
+        assert_eq!(next_event.hour(), 12);
+        let next_event = f.next_event(&next_event).unwrap();
+        assert_eq!(next_event.day(), now.day() + 1);
+        assert_eq!(next_event.hour(), 0);
+    }
+
+    #[test]
+    fn twice_a_day_with_interval() {
+        let f = Frequency::Daily { interval: 2, by_time: vec![
+            Time::from_str("00:00").unwrap(),
+            Time::from_str("12:00").unwrap()
+        ] };
+        let now = DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap();
+        let next_event = f.next_event(&now).unwrap();
+        assert_eq!(next_event.day(), now.day());
+        assert_eq!(next_event.hour(), 12);
+        let next_event = f.next_event(&next_event).unwrap();
+        assert_eq!(next_event.day(), now.day() + 2);
+        assert_eq!(next_event.hour(), 0);
     }
 }

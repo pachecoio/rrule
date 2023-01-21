@@ -131,27 +131,30 @@ fn next_weekly_event(current_date: &DateTime<Utc>, interval: i32, by_day: &Vec<W
             }
         }
         // No days left in the week, so we need to add a week
-        next_date = next_date
-            .with_weekday(by_day[0])
+        if let Some(d) = current_date.with_weekday(by_day[0]) {
+            return d.shift_weeks(interval as i64);
+        }
     }
     Some(next_date)
 }
 
 fn next_monthly_event(current_date: &DateTime<Utc>, interval: i32, by_month_day: &Vec<i32>) -> Option<DateTime<Utc>> {
-    let mut next_date = current_date.with_month(current_date.month() + interval as u32).unwrap();
+    let mut next_date = current_date.shift_months(interval as i64);
     if !by_month_day.is_empty() {
         let current_month_day = current_date.day() as i32;
         for day in by_month_day {
             if *day > current_month_day {
-                if let Some(d) = next_date.with_day(*day as u32) {
+                if let Some(d) = current_date.with_day(*day as u32) {
                     return Some(d);
                 }
             }
         }
         // No days left in the month, so we need to add a month
-        next_date = next_date.with_day(by_month_day[0] as u32).unwrap();
+        if let Some(d) = current_date.with_day(by_month_day[0] as u32) {
+            return d.shift_months(interval as i64);
+        }
     }
-    Some(next_date)
+    next_date
 }
 
 fn validate_secondly(interval: &i32) -> Result<(), FrequencyErrors> {
@@ -190,7 +193,6 @@ fn validate_daily(interval: &i32, by_time: &Vec<Time>) -> Result<(), FrequencyEr
             message: "Interval must be greater than 0".to_string(),
         });
     }
-    validate_total_hours(by_time, 24)?;
     Ok(())
 }
 
@@ -208,21 +210,6 @@ fn validate_monthly(interval: &i32, by_month_day: &Vec<i32>) -> Result<(), Frequ
     if *interval <= 0 {
         return Err(FrequencyErrors::InvalidInterval {
             message: "Interval must be greater than 0".to_string(),
-        });
-    }
-    Ok(())
-}
-
-fn validate_total_hours(by_time: &Vec<Time>, max: i32) -> Result<(), FrequencyErrors> {
-   let mut total_hours = by_time.iter().fold(0, |acc, time| acc + time.hour);
-    let mut total_minutes = by_time.iter().fold(0, |acc, time| acc + time.minute);
-    if total_minutes >= 60 {
-        total_hours = total_hours + (total_minutes / 60);
-        total_minutes = total_minutes % 60;
-    }
-    if total_hours > max {
-        return Err(FrequencyErrors::InvalidTime {
-            message: format!("Total hours must be less than {}", max).to_string(),
         });
     }
     Ok(())
@@ -609,5 +596,36 @@ mod monthly_by_month_day {
         let next_event = f.next_event(&next_event).unwrap();
         assert_eq!(next_event.day(), 1);
         assert_eq!(next_event.month(), 3);
+    }
+
+    #[test]
+    fn every_1st_and_15th_of_the_month() {
+        let f = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![1, 15],
+        };
+        let date = DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap();
+        let next_event = f.next_event(&date).unwrap();
+        assert_eq!(next_event.day(), 15, "next event should be the 15th of the month");
+        assert_eq!(next_event.month(), 1, "next event should be in the same month");
+
+        let next_event = f.next_event(&next_event).unwrap();
+        assert_eq!(next_event.day(), 1, "next event should be the 1st of the month");
+        assert_eq!(next_event.month(), 2, "next event should be in the next month");
+    }
+
+    #[test]
+    fn every_31th() {
+        let f = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![31],
+        };
+        let date = DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap();
+        let next_event = f.next_event(&date).unwrap();
+        assert_eq!(next_event.day(), 31, "next event should be the 31th of the month");
+        assert_eq!(next_event.month(), 1, "next event should be in the same month");
+
+        let next_event = f.next_event(&next_event);
+        assert!(next_event.is_none(), "next event should be none because february does not have a 31th day");
     }
 }

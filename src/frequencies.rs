@@ -21,6 +21,10 @@ pub enum Frequency {
         interval: i32,
         by_day: Vec<Weekday>,
     },
+    Monthly {
+        interval: i32,
+        by_month_day: Vec<i32>,
+    },
 }
 
 pub struct Time {
@@ -58,6 +62,7 @@ impl Frequency {
             Frequency::Hourly { interval } => validate_hourly(interval),
             Frequency::Daily { interval, by_time } => validate_daily(interval, by_time),
             Frequency::Weekly { interval, by_day } => validate_weekly(interval, by_day),
+            Frequency::Monthly { interval, by_month_day } => validate_monthly(interval, by_month_day),
         }
     }
 
@@ -81,6 +86,9 @@ impl Frequency {
             ),
             Frequency::Weekly { interval, by_day } => next_weekly_event(
                 current_date, *interval, &by_day
+            ),
+            Frequency::Monthly { interval, by_month_day } => next_monthly_event(
+                current_date, *interval, &by_month_day
             ),
         }
     }
@@ -125,6 +133,23 @@ fn next_weekly_event(current_date: &DateTime<Utc>, interval: i32, by_day: &Vec<W
         // No days left in the week, so we need to add a week
         next_date = next_date
             .with_weekday(by_day[0])
+    }
+    Some(next_date)
+}
+
+fn next_monthly_event(current_date: &DateTime<Utc>, interval: i32, by_month_day: &Vec<i32>) -> Option<DateTime<Utc>> {
+    let mut next_date = current_date.with_month(current_date.month() + interval as u32).unwrap();
+    if !by_month_day.is_empty() {
+        let current_month_day = current_date.day() as i32;
+        for day in by_month_day {
+            if *day > current_month_day {
+                if let Some(d) = next_date.with_day(*day as u32) {
+                    return Some(d);
+                }
+            }
+        }
+        // No days left in the month, so we need to add a month
+        next_date = next_date.with_day(by_month_day[0] as u32).unwrap();
     }
     Some(next_date)
 }
@@ -176,6 +201,15 @@ fn validate_weekly(interval: &i32, by_day: &Vec<Weekday>) -> Result<(), Frequenc
         });
     }
     // Todo: Validate weekday
+    Ok(())
+}
+
+fn validate_monthly(interval: &i32, by_month_day: &Vec<i32>) -> Result<(), FrequencyErrors> {
+    if *interval <= 0 {
+        return Err(FrequencyErrors::InvalidInterval {
+            message: "Interval must be greater than 0".to_string(),
+        });
+    }
     Ok(())
 }
 
@@ -508,5 +542,72 @@ mod weekly_by_day {
         let next_event = f.next_event(&date).unwrap();
         assert_eq!(next_event.weekday(), Weekday::Mon);
         assert_eq!(next_event.day(), 2);
+    }
+}
+
+#[cfg(test)]
+mod monthly_frequency {
+    use std::str::FromStr;
+    use chrono::{Datelike, Duration, Timelike};
+    use super::*;
+
+    #[test]
+    fn every_month_frequency() {
+        let f = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![],
+        };
+        let result = f.is_valid();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn invalid_interval() {
+        let f = Frequency::Monthly { interval: 0, by_month_day: vec![] };
+        let result = f.is_valid();
+        assert!(result.is_err());
+
+        let f = Frequency::Monthly { interval: -1, by_month_day: vec![] };
+        let result = f.is_valid();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn every_month_collect_events() {
+        let f = Frequency::Monthly { interval: 1, by_month_day: vec![] };
+        let now = Utc::now();
+        let next_event = f.next_event(&now);
+        assert_eq!(next_event.unwrap().month(), now.month() + 1);
+    }
+
+    #[test]
+    fn collect_events_that_span_to_another_year() {
+        let f = Frequency::Monthly { interval: 1, by_month_day: vec![] };
+        let date = DateTime::<Utc>::from_str("2020-12-02T00:00:59Z").unwrap();
+        let next_event = f.next_event(&date);
+        assert_eq!(next_event.unwrap().month(), 1);
+        assert_eq!(next_event.unwrap().year(), 2021);
+    }
+}
+
+#[cfg(test)]
+mod monthly_by_month_day {
+    use std::str::FromStr;
+    use super::*;
+
+    #[test]
+    fn every_1st_of_month() {
+        let f = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![1],
+        };
+        let date = DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap();
+        let next_event = f.next_event(&date).unwrap();
+        assert_eq!(next_event.day(), 1, "next event should be the 1st of the month");
+        assert_eq!(next_event.month(), 2, "next event should be in the next month");
+
+        let next_event = f.next_event(&next_event).unwrap();
+        assert_eq!(next_event.day(), 1);
+        assert_eq!(next_event.month(), 3);
     }
 }

@@ -1,6 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::ops::Add;
-use chrono::{DateTime, Timelike, Utc};
+use chrono::{Datelike, DateTime, Timelike, Utc, Weekday};
+use crate::utils::DateUtils;
 
 pub enum Frequency {
     Secondly {
@@ -15,6 +16,10 @@ pub enum Frequency {
     Daily {
         interval: i32,
         by_time: Vec<Time>
+    },
+    Weekly {
+        interval: i32,
+        by_day: Vec<Weekday>,
     },
 }
 
@@ -52,6 +57,7 @@ impl Frequency {
             Frequency::Minutely { interval } => validate_minutely(interval),
             Frequency::Hourly { interval } => validate_hourly(interval),
             Frequency::Daily { interval, by_time } => validate_daily(interval, by_time),
+            Frequency::Weekly { interval, by_day } => validate_weekly(interval, by_day),
         }
     }
 
@@ -72,6 +78,9 @@ impl Frequency {
             },
             Frequency::Daily { interval, by_time } => next_daily_event(
                 current_date, *interval, &by_time
+            ),
+            Frequency::Weekly { interval, by_day } => next_weekly_event(
+                current_date, *interval, &by_day
             ),
         }
     }
@@ -96,6 +105,26 @@ fn next_daily_event(current_date: &DateTime<Utc>, interval: i32, by_time: &Vec<T
         next_date = next_date
             .with_hour(by_time[0].hour as u32).unwrap()
             .with_minute(by_time[0].minute as u32).unwrap();
+    }
+    Some(next_date)
+}
+
+fn next_weekly_event(current_date: &DateTime<Utc>, interval: i32, by_day: &Vec<Weekday>) -> Option<DateTime<Utc>> {
+    let mut next_date = current_date.add(chrono::Duration::weeks(interval as i64));
+
+    if !by_day.is_empty() {
+        let current_weekday_num = current_date.weekday().num_days_from_sunday() + 1;
+        let d = current_date.format("%Y-%m-%d").to_string();
+        for day in by_day {
+            let day_num = day.num_days_from_sunday() + 1;
+            if day_num > current_weekday_num {
+                let diff = day_num - current_weekday_num;
+                return Some(current_date.add(chrono::Duration::days(diff as i64)));
+            }
+        }
+        // No days left in the week, so we need to add a week
+        next_date = next_date
+            .with_weekday(by_day[0])
     }
     Some(next_date)
 }
@@ -136,15 +165,30 @@ fn validate_daily(interval: &i32, by_time: &Vec<Time>) -> Result<(), FrequencyEr
             message: "Interval must be greater than 0".to_string(),
         });
     }
-    let mut total_hours = by_time.iter().fold(0, |acc, time| acc + time.hour);
+    validate_total_hours(by_time, 24)?;
+    Ok(())
+}
+
+fn validate_weekly(interval: &i32, by_day: &Vec<Weekday>) -> Result<(), FrequencyErrors> {
+    if *interval <= 0 {
+        return Err(FrequencyErrors::InvalidInterval {
+            message: "Interval must be greater than 0".to_string(),
+        });
+    }
+    // Todo: Validate weekday
+    Ok(())
+}
+
+fn validate_total_hours(by_time: &Vec<Time>, max: i32) -> Result<(), FrequencyErrors> {
+   let mut total_hours = by_time.iter().fold(0, |acc, time| acc + time.hour);
     let mut total_minutes = by_time.iter().fold(0, |acc, time| acc + time.minute);
     if total_minutes >= 60 {
         total_hours = total_hours + (total_minutes / 60);
         total_minutes = total_minutes % 60;
     }
-    if total_hours > 24 {
+    if total_hours > max {
         return Err(FrequencyErrors::InvalidTime {
-            message: "Total hours must be less than 24".to_string(),
+            message: format!("Total hours must be less than {}", max).to_string(),
         });
     }
     Ok(())
@@ -384,5 +428,85 @@ mod daily_frequencies_by_hour {
         let next_event = f.next_event(&next_event).unwrap();
         assert_eq!(next_event.day(), now.day() + 2);
         assert_eq!(next_event.hour(), 0);
+    }
+}
+
+#[cfg(test)]
+mod weekly_frequency {
+    use std::str::FromStr;
+    use chrono::{Datelike, Duration, Timelike};
+    use super::*;
+
+    #[test]
+    fn every_week_frequency() {
+        let f = Frequency::Weekly {
+            interval: 1,
+            by_day: vec![],
+        };
+        let result = f.is_valid();
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn invalid_interval() {
+        let f = Frequency::Weekly { interval: 0, by_day: vec![] };
+        let result = f.is_valid();
+        assert!(result.is_err());
+
+        let f = Frequency::Weekly { interval: -1, by_day: vec![] };
+        let result = f.is_valid();
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn every_week_collect_events() {
+        let f = Frequency::Weekly { interval: 1, by_day: vec![] };
+        let now = Utc::now();
+        let next_event = f.next_event(&now);
+        assert_eq!(next_event.unwrap().day(), now.day() + 7);
+    }
+
+    #[test]
+    fn collect_events_that_span_to_another_month() {
+        let f = Frequency::Weekly { interval: 1, by_day: vec![] };
+        let date = DateTime::<Utc>::from_str("2020-01-28T00:00:59Z").unwrap();
+        let next_event = f.next_event(&date);
+        assert_eq!(next_event.unwrap().day(), 4);
+        assert_eq!(next_event.unwrap().month(), 2);
+    }
+}
+
+#[cfg(test)]
+mod weekly_by_day {
+    use std::str::FromStr;
+    use chrono::Datelike;
+    use super::*;
+
+    #[test]
+    fn every_monday() {
+        let f = Frequency::Weekly {
+            interval: 1,
+            by_day: vec![Weekday::Mon],
+        };
+        let date = DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap();
+        let next_event = f.next_event(&date).unwrap();
+        assert_eq!(next_event.weekday(), Weekday::Mon);
+        assert_eq!(next_event.day(), 6);
+
+        let next_event = f.next_event(&next_event).unwrap();
+        assert_eq!(next_event.weekday(), Weekday::Mon);
+        assert_eq!(next_event.day(), 13);
+    }
+
+    #[test]
+    fn twice_a_week() {
+        let f = Frequency::Weekly {
+            interval: 1,
+            by_day: vec![Weekday::Mon, Weekday::Wed],
+        };
+        let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
+        let next_event = f.next_event(&date).unwrap();
+        assert_eq!(next_event.weekday(), Weekday::Mon);
+        assert_eq!(next_event.day(), 2);
     }
 }

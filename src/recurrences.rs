@@ -1,7 +1,7 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use chrono::{DateTime, Duration, Utc};
-use crate::frequencies::Frequency;
+use crate::frequencies::{Frequency, Time};
 
 const MAX_DATE: &str = "9999-12-31T23:59:59Z";
 
@@ -10,7 +10,7 @@ pub struct Recurrence {
 
     /// Start date of the recurrence
     ///
-    /// This won't necessarily be the first event date, as that depends on the frequency
+    /// This won't necessarily be the first event date, as that depends on the frequencies
     /// configuration defined.
     start: DateTime<Utc>,
 
@@ -94,7 +94,7 @@ impl Iterator for Recurrence {
             },
             Some(current_date) => current_date,
         };
-        // Get the next event date based on the current date and frequency
+        // Get the next event date based on the current date and frequencies
         match self.frequency.next_event(&current_date) {
             Some(next_event) => {
                 if next_event > self.end {
@@ -237,7 +237,6 @@ mod hourly_recurrences {
 mod daily_recurrences {
     use std::str::FromStr;
     use chrono::{Datelike, Timelike};
-    use crate::frequencies::Time;
     use super::*;
 
     #[test]

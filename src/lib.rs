@@ -1,6 +1,6 @@
-pub mod frequencies;
 pub mod utils;
 pub mod recurrences;
+pub mod frequencies;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

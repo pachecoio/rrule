@@ -170,5 +170,10 @@ mod secondly_recurrences {
         )).unwrap();
         let dates: Vec<DateTime<Utc>> = recurrence.collect();
         assert_eq!(dates.len(), 3);
+        assert_eq!(dates, vec![
+            DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
+            DateTime::<Utc>::from_str("2023-01-01T00:00:01Z").unwrap(),
+            DateTime::<Utc>::from_str("2023-01-01T00:00:02Z").unwrap(),
+        ]);
     }
 }

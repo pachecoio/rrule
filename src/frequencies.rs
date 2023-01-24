@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
-use std::ops::Add;
-use chrono::{Datelike, DateTime, Timelike, Utc, Weekday};
+use std::ops::{Add, Sub};
+use chrono::{Datelike, DateTime, Duration, Timelike, Utc, Weekday};
 use crate::utils::DateUtils;
 
 pub enum Frequency {
@@ -90,6 +90,33 @@ impl Frequency {
             Frequency::Monthly { interval, by_month_day } => next_monthly_event(
                 current_date, *interval, &by_month_day
             ),
+        }
+    }
+
+    pub(crate) fn contains(&self, date: &DateTime<Utc>) -> bool {
+        match self {
+            Frequency::Secondly { .. } => true,
+            Frequency::Minutely { .. } => true,
+            Frequency::Hourly { .. } => true,
+            Frequency::Daily { by_time, .. } => {
+                if by_time.is_empty() {
+                    return true;
+                }
+                // Return 1 minute from current date to confirm if the current date could be
+                // the next event date.
+                let start = date.sub(Duration::minutes(1));
+                match self.next_event(&start) {
+                    None => false,
+                    Some(next_date) => next_date == *date
+                }
+            }
+            Frequency::Weekly { by_day, .. } => {
+                by_day.is_empty() || by_day.contains(&date.weekday())
+            },
+            Frequency::Monthly { by_month_day, .. } => {
+                let day = date.day() as i32;
+                by_month_day.is_empty() || by_month_day.contains(&day)
+            },
         }
     }
 }
@@ -627,5 +654,70 @@ mod monthly_by_month_day {
 
         let next_event = f.next_event(&next_event);
         assert!(next_event.is_none(), "next event should be none because february does not have a 31th day");
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+    use super::*;
+
+    #[test]
+    fn test_date_within_frequency() {
+        let f = Frequency::Daily { interval: 1, by_time: vec![] };
+        let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
+        let result = f.contains(&date);
+        assert!(result);
+    }
+
+    #[test]
+    fn not_within_frequency() {
+        let f = Frequency::Daily { interval: 1, by_time: vec![
+            Time::from_str("12:00:00").unwrap(),
+        ] };
+        let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
+        let result = f.contains(&date);
+        assert!(!result);
+    }
+
+    #[test]
+    fn within_weekly_frequency() {
+        let f = Frequency::Weekly {
+            interval: 1,
+            by_day: vec![Weekday::Mon, Weekday::Wed],
+        };
+        let date_within_frequency = DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap();
+        let result = f.contains(&date_within_frequency);
+        assert!(result);
+
+        let date_not_within_frequency = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
+        let result = f.contains(&date_not_within_frequency);
+        assert!(!result);
+    }
+
+    #[test]
+    fn within_monthly_frequency() {
+        let f = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![],
+        };
+        let date_within_frequency = DateTime::<Utc>::from_str("2023-01-15T00:00:00Z").unwrap();
+        let result = f.contains(&date_within_frequency);
+        assert!(result);
+    }
+
+    #[test]
+    fn within_monthly_by_month_day() {
+        let f = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![15],
+        };
+        let date_within_frequency = DateTime::<Utc>::from_str("2023-01-15T00:00:00Z").unwrap();
+        let result = f.contains(&date_within_frequency);
+        assert!(result);
+
+        let date_not_within_frequency = DateTime::<Utc>::from_str("2023-01-16T00:00:00Z").unwrap();
+        let result = f.contains(&date_not_within_frequency);
+        assert!(!result);
     }
 }

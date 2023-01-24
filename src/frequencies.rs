@@ -115,9 +115,20 @@ impl Frequency {
             Frequency::Weekly { by_day, .. } => {
                 by_day.is_empty() || by_day.contains(&date.weekday())
             },
-            Frequency::Monthly { by_month_day, .. } => {
+            Frequency::Monthly { by_month_day, by_day, by_week_number, .. } => {
                 let day = date.day() as i32;
-                by_month_day.is_empty() || by_month_day.contains(&day)
+
+                if !by_month_day.is_empty() {
+                    return by_month_day.contains(&day);
+                }
+
+                if !by_day.is_empty() {
+                    let weekday = date.weekday();
+                    let week_number = weekday_ordinal(date);
+                    return by_day.contains(&weekday) && by_week_number.contains(&week_number);
+                }
+
+                true
             },
         }
     }
@@ -749,6 +760,29 @@ mod tests {
     }
 
     #[test]
+    fn within_daily_frequency() {
+        let f = Frequency::Daily { interval: 1, by_time: vec![] };
+        let date_within_frequency = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
+        let result = f.contains(&date_within_frequency);
+        assert!(result);
+    }
+
+    #[test]
+    fn within_twice_a_day_frequency() {
+        let f = Frequency::Daily { interval: 1, by_time: vec![
+            Time::from_str("12:00:00").unwrap(),
+            Time::from_str("18:00:00").unwrap(),
+        ] };
+        let date_within_frequency = DateTime::<Utc>::from_str("2023-01-01T12:00:00Z").unwrap();
+        let result = f.contains(&date_within_frequency);
+        assert!(result);
+
+        let date_not_within_frequency = DateTime::<Utc>::from_str("2023-01-01T17:00:00Z").unwrap();
+        let result = f.contains(&date_not_within_frequency);
+        assert!(!result);
+    }
+
+    #[test]
     fn within_weekly_frequency() {
         let f = Frequency::Weekly {
             interval: 1,
@@ -760,6 +794,21 @@ mod tests {
 
         let date_not_within_frequency = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let result = f.contains(&date_not_within_frequency);
+        assert!(!result);
+    }
+
+    #[test]
+    fn within_weekly_by_day_frequency() {
+        let f = Frequency::Weekly {
+            interval: 1,
+            by_day: vec![Weekday::Mon, Weekday::Wed],
+        };
+        let monday = DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap();
+        let result = f.contains(&monday);
+        assert!(result);
+
+        let tuesday = DateTime::<Utc>::from_str("2023-01-03T00:00:00Z").unwrap();
+        let result = f.contains(&tuesday);
         assert!(!result);
     }
 
@@ -790,6 +839,23 @@ mod tests {
 
         let date_not_within_frequency = DateTime::<Utc>::from_str("2023-01-16T00:00:00Z").unwrap();
         let result = f.contains(&date_not_within_frequency);
+        assert!(!result);
+    }
+
+    #[test]
+    fn within_monthly_by_day() {
+        let f = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![],
+            by_day: vec![Weekday::Wed, Weekday::Fri],
+            by_week_number: vec![1],
+        };
+        let wednesday = DateTime::<Utc>::from_str("2023-01-04T00:00:00Z").unwrap();
+        let result = f.contains(&wednesday);
+        assert!(result);
+
+        let thursday = DateTime::<Utc>::from_str("2023-01-05T00:00:00Z").unwrap();
+        let result = f.contains(&thursday);
         assert!(!result);
     }
 }

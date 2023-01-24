@@ -702,6 +702,27 @@ mod monthly_by_weekday {
         assert_eq!(next_event.day(), 10, "next event should be the 10th of the month");
         assert_eq!(next_event.month(), 1, "next event should be in the same month");
     }
+
+    #[test]
+    fn every_1st_wednesday_and_friday() {
+        let f = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![],
+            by_day: vec![Weekday::Wed, Weekday::Fri],
+            by_week_number: vec![1],
+        };
+        let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
+        let next_event = f.next_event(&date).unwrap();
+        assert_eq!(next_event.day(), 4, "next event should be the 4th of the month");
+        assert_eq!(next_event.month(), 1, "next event should be in the same month");
+
+        let next_event = f.next_event(&next_event).unwrap();
+        assert_eq!(next_event.day(), 6, "next event should be the 6th of the month");
+        assert_eq!(next_event.month(), 1, "next event should be in the same month");
+
+        let next_event = f.next_event(&next_event).unwrap();
+        assert_eq!(next_event.day(), 1, "next event should be the 1st of the month");
+    }
 }
 
 #[cfg(test)]

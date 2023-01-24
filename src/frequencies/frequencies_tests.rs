@@ -456,6 +456,24 @@ mod monthly_by_weekday {
 }
 
 #[cfg(test)]
+mod yearly_frequencies {
+    use super::*;
+
+    #[test]
+    fn once_a_year() {
+        let f = Frequency::Yearly {
+            interval: 1,
+            dates: vec![],
+        };
+        let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
+        let next_event = f.next_event(&date).unwrap();
+        assert_eq!(next_event.day(), 1, "next event should be the 1st of the month");
+        assert_eq!(next_event.month(), 1, "next event should be in the same month");
+        assert_eq!(next_event.year(), 2024, "next event should be in the next year");
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use std::str::FromStr;
     use super::*;

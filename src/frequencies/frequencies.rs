@@ -27,6 +27,10 @@ pub enum Frequency {
         by_day: Vec<Weekday>,
         by_week_number: Vec<i32>,
     },
+    Yearly {
+        interval: i32,
+        dates: Vec<DateTime<Utc>>,
+    }
 }
 
 pub struct Time {
@@ -65,6 +69,9 @@ impl Frequency {
             Frequency::Daily { interval, by_time } => validate_daily(interval, by_time),
             Frequency::Weekly { interval, by_day } => validate_weekly(interval, by_day),
             Frequency::Monthly { interval, by_month_day, .. } => validate_monthly(interval, by_month_day),
+            Frequency::Yearly { interval, dates, .. } => validate_yearly(
+                interval, dates
+            ),
         }
     }
 
@@ -92,6 +99,9 @@ impl Frequency {
             Frequency::Monthly { interval, by_month_day, by_day, by_week_number } => next_monthly_event(
                 current_date, *interval, &by_month_day, &by_day, &by_week_number
             ),
+            Frequency::Yearly { interval, dates} => next_yearly_event(
+                current_date, *interval, dates
+            )
         }
     }
 
@@ -130,6 +140,9 @@ impl Frequency {
 
                 true
             },
+            Frequency::Yearly { dates, .. } => {
+                true
+            }
         }
     }
 }
@@ -200,6 +213,11 @@ fn next_monthly_event(current_date: &DateTime<Utc>, interval: i32, by_month_day:
     next_date
 }
 
+fn next_yearly_event(current_date: &DateTime<Utc>, interval: i32, dates: &Vec<DateTime<Utc>>) -> Option<DateTime<Utc>> {
+    let next_date = current_date.shift_years(interval as i64);
+    next_date
+}
+
 fn validate_secondly(interval: &i32) -> Result<(), FrequencyErrors> {
     if *interval > 0 {
         Ok(())
@@ -257,6 +275,10 @@ fn validate_monthly(interval: &i32, by_month_day: &Vec<i32>) -> Result<(), Frequ
         });
     }
     // Todo: Validate day of the month
+    Ok(())
+}
+
+fn validate_yearly(interval: &i32, dates: &Vec<DateTime<Utc>>) -> Result<(), FrequencyErrors> {
     Ok(())
 }
 

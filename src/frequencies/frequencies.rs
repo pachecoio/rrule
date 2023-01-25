@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, Sub};
 use chrono::{Datelike, DateTime, Duration, Timelike, Utc, Weekday};
-use crate::utils::{DateUtils, get_next_nth_weekday_in_range, weekday_ordinal};
+use crate::utils::{DateUtils, get_next_nth_weekday_in_range, potato, weekday_ordinal};
 
 pub enum Frequency {
     Secondly {
@@ -272,6 +272,12 @@ fn next_monthly_event(current_date: &DateTime<Utc>, interval: i32, by_month_day:
 
 fn _next_monthly_event(current_date: &DateTime<Utc>, interval: i32, nth_weekdays: &Vec<NthWeekday>) -> Option<DateTime<Utc>> {
     let mut next_date = current_date.shift_months(interval as i64);
+    if !nth_weekdays.is_empty() {
+        return potato(
+            current_date,
+            nth_weekdays,
+        )
+    }
     next_date
 }
 

@@ -404,15 +404,19 @@ mod monthly_by_month_day {
 #[cfg(test)]
 mod monthly_by_weekday {
     use std::str::FromStr;
+    use crate::frequencies::NthWeekday;
     use super::*;
 
     #[test]
     fn every_1st_monday_of_the_month() {
-        let f = Frequency::Monthly {
+        let f = Frequency::MonthlyByDay {
             interval: 1,
-            by_month_day: vec![],
-            by_day: vec![Weekday::Mon],
-            by_week_number: vec![1],
+            nth_weekdays: vec![
+                NthWeekday {
+                    week_number: 1,
+                    weekday: Weekday::Mon,
+                },
+            ],
         };
         let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let next_event = f.next_event(&date).unwrap();
@@ -422,11 +426,14 @@ mod monthly_by_weekday {
 
     #[test]
     fn every_2nd_tuesday() {
-        let f = Frequency::Monthly {
+        let f = Frequency::MonthlyByDay {
             interval: 1,
-            by_month_day: vec![],
-            by_day: vec![Weekday::Tue],
-            by_week_number: vec![2],
+            nth_weekdays: vec![
+                NthWeekday {
+                    week_number: 2,
+                    weekday: Weekday::Tue,
+                },
+            ],
         };
         let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let next_event = f.next_event(&date).unwrap();

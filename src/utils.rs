@@ -149,7 +149,7 @@ pub fn potato(current_date: &DateTime<Utc>, nth_weekdays: &Vec<NthWeekday>) -> O
     let weekday = current_date.weekday();
     let week_number = weekday_ordinal(current_date);
 
-    for nth_weekday in ordered_weekdays {
+    for nth_weekday in &ordered_weekdays {
         if nth_weekday.week_number == week_number && nth_weekday.weekday.num_days_from_sunday() > weekday.num_days_from_sunday() {
             return Some(current_date.add(
                 Duration::days((nth_weekday.weekday.num_days_from_sunday() - weekday.num_days_from_sunday()) as i64)
@@ -160,7 +160,12 @@ pub fn potato(current_date: &DateTime<Utc>, nth_weekdays: &Vec<NthWeekday>) -> O
             return current_date.shift_days(days_diff as i64)?.shift_weeks(weeks_diff as i64)
         }
     }
-    None
+
+    // Return first supported nth weekday of next month
+    let mut res = current_date.shift_months(1)?.with_day(1)?;
+    let weekday_num_diff = ordered_weekdays[0].week_number as i64 - weekday_ordinal(&res) as i64;
+    res = res.shift_weeks(weekday_num_diff)?;
+    res.with_weekday(ordered_weekdays[0].weekday)
 }
 
 

@@ -443,11 +443,18 @@ mod monthly_by_weekday {
 
     #[test]
     fn every_1st_wednesday_and_friday() {
-        let f = Frequency::Monthly {
+        let f = Frequency::MonthlyByDay {
             interval: 1,
-            by_month_day: vec![],
-            by_day: vec![Weekday::Wed, Weekday::Fri],
-            by_week_number: vec![1],
+            nth_weekdays: vec![
+                NthWeekday {
+                    week_number: 1,
+                    weekday: Weekday::Wed,
+                },
+                NthWeekday {
+                    week_number: 1,
+                    weekday: Weekday::Fri,
+                },
+            ],
         };
         let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let next_event = f.next_event(&date).unwrap();

@@ -365,11 +365,10 @@ mod monthly_by_month_day {
 
     #[test]
     fn every_1st_and_15th_of_the_month() {
-        let f = Frequency::Monthly {
+        let f = Frequency::MonthlyByDay {
             interval: 1,
             by_month_day: vec![1, 15],
-            by_day: vec![],
-            by_week_number: vec![],
+            nth_weekdays: vec![],
         };
         let date = DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap();
         let next_event = f.next_event(&date).unwrap();
@@ -383,11 +382,10 @@ mod monthly_by_month_day {
 
     #[test]
     fn every_31th() {
-        let f = Frequency::Monthly {
+        let f = Frequency::MonthlyByDay {
             interval: 1,
             by_month_day: vec![31],
-            by_day: vec![],
-            by_week_number: vec![],
+            nth_weekdays: vec![],
         };
         let date = DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap();
         let next_event = f.next_event(&date).unwrap();

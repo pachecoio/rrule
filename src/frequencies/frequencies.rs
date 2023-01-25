@@ -145,7 +145,7 @@ impl Frequency {
                 current_date, *interval, &by_month_day, &by_day, &by_week_number
             ),
             Frequency::MonthlyByDay { interval, by_month_day, nth_weekdays } => _next_monthly_event(
-                current_date, *interval, &nth_weekdays
+                current_date, *interval, &by_month_day, &nth_weekdays
             ),
             Frequency::Yearly { interval, by_month, by_day, by_week_number} => next_yearly_event(
                 current_date, *interval, *by_month, &by_day, &by_week_number
@@ -271,8 +271,22 @@ fn next_monthly_event(current_date: &DateTime<Utc>, interval: i32, by_month_day:
     next_date
 }
 
-fn _next_monthly_event(current_date: &DateTime<Utc>, interval: i32, nth_weekdays: &Vec<NthWeekday>) -> Option<DateTime<Utc>> {
+fn _next_monthly_event(current_date: &DateTime<Utc>, interval: i32, by_month_day: &Vec<i32>, nth_weekdays: &Vec<NthWeekday>) -> Option<DateTime<Utc>> {
     let mut next_date = current_date.shift_months(interval as i64);
+    if !by_month_day.is_empty() {
+        let current_month_day = current_date.day() as i32;
+        for day in by_month_day {
+            if *day > current_month_day {
+                if let Some(d) = current_date.with_day(*day as u32) {
+                    return Some(d);
+                }
+            }
+        }
+        // No days left in the month, so we need to add a month
+        if let Some(d) = current_date.with_day(by_month_day[0] as u32) {
+            return d.shift_months(interval as i64);
+        }
+    }
     if !nth_weekdays.is_empty() {
         return potato(
             current_date,

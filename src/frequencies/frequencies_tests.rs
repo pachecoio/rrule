@@ -303,11 +303,10 @@ mod monthly_frequency {
 
     #[test]
     fn every_month_frequency() {
-        let f = Frequency::Monthly {
+        let f = Frequency::MonthlyByDay {
             interval: 1,
             by_month_day: vec![],
-            by_day: vec![],
-            by_week_number: vec![],
+            nth_weekdays: vec![],
         };
         let result = f.is_valid();
         assert!(result.is_ok());
@@ -315,18 +314,18 @@ mod monthly_frequency {
 
     #[test]
     fn invalid_interval() {
-        let f = Frequency::Monthly { interval: 0, by_month_day: vec![], by_day: vec![], by_week_number: vec![] };
+        let f = Frequency::MonthlyByDay { interval: 0, by_month_day: vec![], nth_weekdays: vec![] };
         let result = f.is_valid();
         assert!(result.is_err());
 
-        let f = Frequency::Monthly { interval: -1, by_month_day: vec![], by_day: vec![], by_week_number: vec![] };
+        let f = Frequency::MonthlyByDay { interval: -1, by_month_day: vec![], nth_weekdays: vec![] };
         let result = f.is_valid();
         assert!(result.is_err());
     }
 
     #[test]
     fn every_month_collect_events() {
-        let f = Frequency::Monthly { interval: 1, by_month_day: vec![], by_day: vec![], by_week_number: vec![] };
+        let f = Frequency::MonthlyByDay { interval: 1, by_month_day: vec![], nth_weekdays: vec![] };
         let now = Utc::now();
         let next_event = f.next_event(&now);
         assert_eq!(next_event.unwrap().month(), now.month() + 1);
@@ -334,7 +333,7 @@ mod monthly_frequency {
 
     #[test]
     fn collect_events_that_span_to_another_year() {
-        let f = Frequency::Monthly { interval: 1, by_month_day: vec![], by_day: vec![], by_week_number: vec![] };
+        let f = Frequency::MonthlyByDay { interval: 1, by_month_day: vec![], nth_weekdays: vec![] };
         let date = DateTime::<Utc>::from_str("2020-12-02T00:00:59Z").unwrap();
         let next_event = f.next_event(&date);
         assert_eq!(next_event.unwrap().month(), 1);
@@ -349,11 +348,10 @@ mod monthly_by_month_day {
 
     #[test]
     fn every_1st_of_month() {
-        let f = Frequency::Monthly {
+        let f = Frequency::MonthlyByDay {
             interval: 1,
             by_month_day: vec![1],
-            by_day: vec![],
-            by_week_number: vec![],
+            nth_weekdays: vec![],
         };
         let date = DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap();
         let next_event = f.next_event(&date).unwrap();
@@ -411,6 +409,7 @@ mod monthly_by_weekday {
     fn every_1st_monday_of_the_month() {
         let f = Frequency::MonthlyByDay {
             interval: 1,
+            by_month_day: vec![],
             nth_weekdays: vec![
                 NthWeekday {
                     week_number: 1,
@@ -428,6 +427,7 @@ mod monthly_by_weekday {
     fn every_2nd_tuesday() {
         let f = Frequency::MonthlyByDay {
             interval: 1,
+            by_month_day: vec![],
             nth_weekdays: vec![
                 NthWeekday {
                     week_number: 2,
@@ -445,6 +445,7 @@ mod monthly_by_weekday {
     fn every_1st_wednesday_and_friday() {
         let f = Frequency::MonthlyByDay {
             interval: 1,
+            by_month_day: vec![],
             nth_weekdays: vec![
                 NthWeekday {
                     week_number: 1,

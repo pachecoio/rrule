@@ -30,6 +30,7 @@ pub enum Frequency {
     },
     MonthlyByDay {
         interval: i32,
+        by_month_day: Vec<i32>,
         nth_weekdays: Vec<NthWeekday>,
     },
     Yearly {
@@ -111,7 +112,7 @@ impl Frequency {
             Frequency::Weekly { interval, by_day } => validate_weekly(interval, by_day),
             Frequency::Monthly { interval, by_month_day, .. } => validate_monthly(interval, by_month_day),
 
-            Frequency::MonthlyByDay { interval, nth_weekdays } => validate_monthly(interval, &vec![]),
+            Frequency::MonthlyByDay { interval, by_month_day, nth_weekdays } => validate_monthly(interval, &vec![]),
 
             Frequency::Yearly { interval, by_month, by_day, by_week_number } => validate_yearly(
                 interval, by_month, by_day, by_week_number
@@ -143,7 +144,7 @@ impl Frequency {
             Frequency::Monthly { interval, by_month_day, by_day, by_week_number } => next_monthly_event(
                 current_date, *interval, &by_month_day, &by_day, &by_week_number
             ),
-            Frequency::MonthlyByDay { interval, nth_weekdays } => _next_monthly_event(
+            Frequency::MonthlyByDay { interval, by_month_day, nth_weekdays } => _next_monthly_event(
                 current_date, *interval, &nth_weekdays
             ),
             Frequency::Yearly { interval, by_month, by_day, by_week_number} => next_yearly_event(

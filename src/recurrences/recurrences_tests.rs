@@ -221,17 +221,17 @@ mod weekly_recurrences {
 
 #[cfg(test)]
 mod monthly_recurrences {
+    use crate::frequencies::NthWeekday;
     use super::*;
 
     #[test]
     fn monthly_recurrence() {
         let start = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let end = DateTime::<Utc>::from_str("2023-03-01T00:00:00Z").unwrap();
-        let frequency = Frequency::Monthly {
+        let frequency = Frequency::MonthlyByDay {
             interval: 1,
-            by_day: vec![],
             by_month_day: vec![],
-            by_week_number: vec![],
+            nth_weekdays: vec![],
         };
         let recurrence = Recurrence::new(frequency, start, Some(end), Some(
             Duration::weeks(1)
@@ -249,11 +249,10 @@ mod monthly_recurrences {
     fn monthly_recurrence_by_month_day() {
         let start = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let end = DateTime::<Utc>::from_str("2023-02-20T00:00:00Z").unwrap();
-        let frequency = Frequency::Monthly {
+        let frequency = Frequency::MonthlyByDay {
             interval: 1,
-            by_day: vec![],
             by_month_day: vec![1, 15],
-            by_week_number: vec![],
+            nth_weekdays: vec![],
         };
         let recurrence = Recurrence::new(frequency, start, Some(end), Some(
             Duration::weeks(1)
@@ -272,11 +271,19 @@ mod monthly_recurrences {
     fn monthly_recurrence_by_week_number() {
         let start = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let end = DateTime::<Utc>::from_str("2023-02-20T00:00:00Z").unwrap();
-        let frequency = Frequency::Monthly {
+        let frequency = Frequency::MonthlyByDay {
             interval: 1,
-            by_day: vec![Weekday::Wed, Weekday::Fri],
             by_month_day: vec![],
-            by_week_number: vec![1],
+            nth_weekdays: vec![
+                NthWeekday::new(
+                    Weekday::Wed,
+                    1
+                ),
+                NthWeekday::new(
+                    Weekday::Fri,
+                    1
+                ),
+            ],
         };
         let recurrence = Recurrence::new(frequency, start, Some(end), Some(
             Duration::weeks(1)

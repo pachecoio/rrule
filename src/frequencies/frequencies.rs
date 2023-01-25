@@ -188,7 +188,15 @@ impl Frequency {
 
                 true
             },
-            Frequency::MonthlyByDay { nth_weekdays, .. } => {
+            Frequency::MonthlyByDay { nth_weekdays, by_month_day, .. } => {
+                if by_month_day.is_empty() && nth_weekdays.is_empty() {
+                    return true;
+                }
+                let day = date.day() as i32;
+
+                if !by_month_day.is_empty() {
+                    return by_month_day.contains(&day);
+                }
                 let weekday = date.weekday();
                 let week_number = weekday_ordinal(date);
                 for nth in nth_weekdays {

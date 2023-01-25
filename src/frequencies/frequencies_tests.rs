@@ -492,6 +492,7 @@ mod yearly_frequencies {
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
+    use crate::frequencies::NthWeekday;
     use super::*;
 
     #[test]
@@ -567,11 +568,10 @@ mod tests {
 
     #[test]
     fn within_monthly_frequency() {
-        let f = Frequency::Monthly {
+        let f = Frequency::MonthlyByDay {
             interval: 1,
             by_month_day: vec![],
-            by_day: vec![],
-            by_week_number: vec![],
+            nth_weekdays: vec![],
         };
         let date_within_frequency = DateTime::<Utc>::from_str("2023-01-15T00:00:00Z").unwrap();
         let result = f.contains(&date_within_frequency);
@@ -580,11 +580,10 @@ mod tests {
 
     #[test]
     fn within_monthly_by_month_day() {
-        let f = Frequency::Monthly {
+        let f = Frequency::MonthlyByDay {
             interval: 1,
             by_month_day: vec![15],
-            by_day: vec![],
-            by_week_number: vec![],
+            nth_weekdays: vec![],
         };
         let date_within_frequency = DateTime::<Utc>::from_str("2023-01-15T00:00:00Z").unwrap();
         let result = f.contains(&date_within_frequency);
@@ -597,11 +596,19 @@ mod tests {
 
     #[test]
     fn within_monthly_by_day() {
-        let f = Frequency::Monthly {
+        let f = Frequency::MonthlyByDay {
             interval: 1,
             by_month_day: vec![],
-            by_day: vec![Weekday::Wed, Weekday::Fri],
-            by_week_number: vec![1],
+            nth_weekdays: vec![
+                NthWeekday::new(
+                    Weekday::Wed,
+                    1,
+                ),
+                NthWeekday::new(
+                    Weekday::Fri,
+                    1,
+                ),
+            ],
         };
         let wednesday = DateTime::<Utc>::from_str("2023-01-04T00:00:00Z").unwrap();
         let result = f.contains(&wednesday);

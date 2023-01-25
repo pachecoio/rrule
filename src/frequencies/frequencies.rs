@@ -25,12 +25,6 @@ pub enum Frequency {
     Monthly {
         interval: i32,
         by_month_day: Vec<i32>,
-        by_day: Vec<Weekday>,
-        by_week_number: Vec<i32>,
-    },
-    MonthlyByDay {
-        interval: i32,
-        by_month_day: Vec<i32>,
         nth_weekdays: Vec<NthWeekday>,
     },
     Yearly {
@@ -110,9 +104,8 @@ impl Frequency {
             Frequency::Hourly { interval } => validate_hourly(interval),
             Frequency::Daily { interval, by_time } => validate_daily(interval, by_time),
             Frequency::Weekly { interval, by_day } => validate_weekly(interval, by_day),
-            Frequency::Monthly { interval, by_month_day, .. } => validate_monthly(interval, by_month_day),
 
-            Frequency::MonthlyByDay { interval, by_month_day, nth_weekdays } => validate_monthly(interval, &vec![]),
+            Frequency::Monthly { interval, by_month_day, nth_weekdays } => validate_monthly(interval, &vec![]),
 
             Frequency::Yearly { interval, by_month, by_day, by_week_number } => validate_yearly(
                 interval, by_month, by_day, by_week_number
@@ -141,10 +134,7 @@ impl Frequency {
             Frequency::Weekly { interval, by_day } => next_weekly_event(
                 current_date, *interval, &by_day
             ),
-            Frequency::Monthly { interval, by_month_day, by_day, by_week_number } => next_monthly_event(
-                current_date, *interval, &by_month_day, &by_day, &by_week_number
-            ),
-            Frequency::MonthlyByDay { interval, by_month_day, nth_weekdays } => _next_monthly_event(
+            Frequency::Monthly { interval, by_month_day, nth_weekdays } => _next_monthly_event(
                 current_date, *interval, &by_month_day, &nth_weekdays
             ),
             Frequency::Yearly { interval, by_month, by_day, by_week_number} => next_yearly_event(
@@ -173,22 +163,7 @@ impl Frequency {
             Frequency::Weekly { by_day, .. } => {
                 by_day.is_empty() || by_day.contains(&date.weekday())
             },
-            Frequency::Monthly { by_month_day, by_day, by_week_number, .. } => {
-                let day = date.day() as i32;
-
-                if !by_month_day.is_empty() {
-                    return by_month_day.contains(&day);
-                }
-
-                if !by_day.is_empty() {
-                    let weekday = date.weekday();
-                    let week_number = weekday_ordinal(date);
-                    return by_day.contains(&weekday) && by_week_number.contains(&week_number);
-                }
-
-                true
-            },
-            Frequency::MonthlyByDay { nth_weekdays, by_month_day, .. } => {
+            Frequency::Monthly { nth_weekdays, by_month_day, .. } => {
                 if by_month_day.is_empty() && nth_weekdays.is_empty() {
                     return true;
                 }

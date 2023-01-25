@@ -303,7 +303,7 @@ mod monthly_frequency {
 
     #[test]
     fn every_month_frequency() {
-        let f = Frequency::MonthlyByDay {
+        let f = Frequency::Monthly {
             interval: 1,
             by_month_day: vec![],
             nth_weekdays: vec![],
@@ -314,18 +314,18 @@ mod monthly_frequency {
 
     #[test]
     fn invalid_interval() {
-        let f = Frequency::MonthlyByDay { interval: 0, by_month_day: vec![], nth_weekdays: vec![] };
+        let f = Frequency::Monthly { interval: 0, by_month_day: vec![], nth_weekdays: vec![] };
         let result = f.is_valid();
         assert!(result.is_err());
 
-        let f = Frequency::MonthlyByDay { interval: -1, by_month_day: vec![], nth_weekdays: vec![] };
+        let f = Frequency::Monthly { interval: -1, by_month_day: vec![], nth_weekdays: vec![] };
         let result = f.is_valid();
         assert!(result.is_err());
     }
 
     #[test]
     fn every_month_collect_events() {
-        let f = Frequency::MonthlyByDay { interval: 1, by_month_day: vec![], nth_weekdays: vec![] };
+        let f = Frequency::Monthly { interval: 1, by_month_day: vec![], nth_weekdays: vec![] };
         let now = Utc::now();
         let next_event = f.next_event(&now);
         assert_eq!(next_event.unwrap().month(), now.month() + 1);
@@ -333,7 +333,7 @@ mod monthly_frequency {
 
     #[test]
     fn collect_events_that_span_to_another_year() {
-        let f = Frequency::MonthlyByDay { interval: 1, by_month_day: vec![], nth_weekdays: vec![] };
+        let f = Frequency::Monthly { interval: 1, by_month_day: vec![], nth_weekdays: vec![] };
         let date = DateTime::<Utc>::from_str("2020-12-02T00:00:59Z").unwrap();
         let next_event = f.next_event(&date);
         assert_eq!(next_event.unwrap().month(), 1);
@@ -348,7 +348,7 @@ mod monthly_by_month_day {
 
     #[test]
     fn every_1st_of_month() {
-        let f = Frequency::MonthlyByDay {
+        let f = Frequency::Monthly {
             interval: 1,
             by_month_day: vec![1],
             nth_weekdays: vec![],
@@ -365,7 +365,7 @@ mod monthly_by_month_day {
 
     #[test]
     fn every_1st_and_15th_of_the_month() {
-        let f = Frequency::MonthlyByDay {
+        let f = Frequency::Monthly {
             interval: 1,
             by_month_day: vec![1, 15],
             nth_weekdays: vec![],
@@ -382,7 +382,7 @@ mod monthly_by_month_day {
 
     #[test]
     fn every_31th() {
-        let f = Frequency::MonthlyByDay {
+        let f = Frequency::Monthly {
             interval: 1,
             by_month_day: vec![31],
             nth_weekdays: vec![],
@@ -405,7 +405,7 @@ mod monthly_by_weekday {
 
     #[test]
     fn every_1st_monday_of_the_month() {
-        let f = Frequency::MonthlyByDay {
+        let f = Frequency::Monthly {
             interval: 1,
             by_month_day: vec![],
             nth_weekdays: vec![
@@ -423,7 +423,7 @@ mod monthly_by_weekday {
 
     #[test]
     fn every_2nd_tuesday() {
-        let f = Frequency::MonthlyByDay {
+        let f = Frequency::Monthly {
             interval: 1,
             by_month_day: vec![],
             nth_weekdays: vec![
@@ -441,7 +441,7 @@ mod monthly_by_weekday {
 
     #[test]
     fn every_1st_wednesday_and_friday() {
-        let f = Frequency::MonthlyByDay {
+        let f = Frequency::Monthly {
             interval: 1,
             by_month_day: vec![],
             nth_weekdays: vec![
@@ -568,7 +568,7 @@ mod tests {
 
     #[test]
     fn within_monthly_frequency() {
-        let f = Frequency::MonthlyByDay {
+        let f = Frequency::Monthly {
             interval: 1,
             by_month_day: vec![],
             nth_weekdays: vec![],
@@ -580,7 +580,7 @@ mod tests {
 
     #[test]
     fn within_monthly_by_month_day() {
-        let f = Frequency::MonthlyByDay {
+        let f = Frequency::Monthly {
             interval: 1,
             by_month_day: vec![15],
             nth_weekdays: vec![],
@@ -596,7 +596,7 @@ mod tests {
 
     #[test]
     fn within_monthly_by_day() {
-        let f = Frequency::MonthlyByDay {
+        let f = Frequency::Monthly {
             interval: 1,
             by_month_day: vec![],
             nth_weekdays: vec![

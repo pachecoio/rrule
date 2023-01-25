@@ -228,7 +228,7 @@ mod monthly_recurrences {
     fn monthly_recurrence() {
         let start = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let end = DateTime::<Utc>::from_str("2023-03-01T00:00:00Z").unwrap();
-        let frequency = Frequency::MonthlyByDay {
+        let frequency = Frequency::Monthly {
             interval: 1,
             by_month_day: vec![],
             nth_weekdays: vec![],
@@ -249,7 +249,7 @@ mod monthly_recurrences {
     fn monthly_recurrence_by_month_day() {
         let start = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let end = DateTime::<Utc>::from_str("2023-02-20T00:00:00Z").unwrap();
-        let frequency = Frequency::MonthlyByDay {
+        let frequency = Frequency::Monthly {
             interval: 1,
             by_month_day: vec![1, 15],
             nth_weekdays: vec![],
@@ -271,7 +271,7 @@ mod monthly_recurrences {
     fn monthly_recurrence_by_week_number() {
         let start = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let end = DateTime::<Utc>::from_str("2023-02-20T00:00:00Z").unwrap();
-        let frequency = Frequency::MonthlyByDay {
+        let frequency = Frequency::Monthly {
             interval: 1,
             by_month_day: vec![],
             nth_weekdays: vec![

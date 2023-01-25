@@ -275,6 +275,7 @@ fn _next_monthly_event(current_date: &DateTime<Utc>, interval: i32, nth_weekdays
     if !nth_weekdays.is_empty() {
         return potato(
             current_date,
+            interval as i64,
             nth_weekdays,
         )
     }

@@ -143,7 +143,11 @@ pub fn get_next_nth_weekday_in_range(date: &DateTime<Utc>, weekdays: &[Weekday],
 }
 
 
-pub fn potato(current_date: &DateTime<Utc>, nth_weekdays: &Vec<NthWeekday>) -> Option<DateTime<Utc>> {
+pub fn potato(current_date: &DateTime<Utc>, interval: i64, nth_weekdays: &Vec<NthWeekday>) -> Option<DateTime<Utc>> {
+    if nth_weekdays.is_empty() {
+        return None;
+    }
+
     let ordered_weekdays = order_nth_weekdays(nth_weekdays);
 
     let weekday = current_date.weekday();
@@ -162,7 +166,7 @@ pub fn potato(current_date: &DateTime<Utc>, nth_weekdays: &Vec<NthWeekday>) -> O
     }
 
     // Return first supported nth weekday of next month
-    let mut res = current_date.shift_months(1)?.with_day(1)?;
+    let mut res = current_date.shift_months(interval)?.with_day(1)?;
     let weekday_num_diff = ordered_weekdays[0].week_number as i64 - weekday_ordinal(&res) as i64;
     res = res.shift_weeks(weekday_num_diff)?;
     res.with_weekday(ordered_weekdays[0].weekday)
@@ -477,7 +481,7 @@ mod test_refactor {
     #[test]
     fn test_get_next_nth_weekday_none() {
         let date = DateTime::<Utc>::from_str("2023-01-09T00:00:00Z").unwrap();
-        let result = potato(&date, &vec![]);
+        let result = potato(&date, 1, &vec![]);
         assert!(result.is_none());
     }
 
@@ -486,6 +490,7 @@ mod test_refactor {
         let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let result = potato(
             &date,
+            1,
             &vec![NthWeekday::new(Weekday::Mon, 1)]
         );
         assert_eq!(result.unwrap(), DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap());
@@ -496,6 +501,7 @@ mod test_refactor {
         let date = DateTime::<Utc>::from_str("2023-01-09T00:00:00Z").unwrap();
         let result = potato(
             &date,
+            1,
             &vec![
                 NthWeekday::new(Weekday::Mon, 3),
                 NthWeekday::new(Weekday::Tue, 2),
@@ -505,6 +511,7 @@ mod test_refactor {
 
         let result = potato(
             &result.unwrap(),
+            1,
             &vec![
                 NthWeekday::new(Weekday::Tue, 2),
                 NthWeekday::new(Weekday::Mon, 3),

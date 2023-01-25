@@ -218,6 +218,7 @@ mod daily_frequencies_by_hour {
 
 #[cfg(test)]
 mod weekly_frequency {
+    use std::ops::Add;
     use std::str::FromStr;
     use chrono::{Datelike, Duration, Timelike};
     use super::*;
@@ -248,7 +249,7 @@ mod weekly_frequency {
         let f = Frequency::Weekly { interval: 1, by_day: vec![] };
         let now = Utc::now();
         let next_event = f.next_event(&now);
-        assert_eq!(next_event.unwrap().day(), now.day() + 7);
+        assert_eq!(next_event.unwrap().day(), now.add(Duration::weeks(1)).day());
     }
 
     #[test]
@@ -463,7 +464,9 @@ mod yearly_frequencies {
     fn once_a_year() {
         let f = Frequency::Yearly {
             interval: 1,
-            dates: vec![],
+            by_month: 0,
+            by_day: vec![],
+            by_week_number: vec![],
         };
         let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let next_event = f.next_event(&date).unwrap();

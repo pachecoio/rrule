@@ -64,6 +64,7 @@ fn validate_duration(frequency: &Frequency, duration: &Duration) -> Result<(), R
         Frequency::Daily { .. } => {}
         Frequency::Weekly { .. } => {}
         Frequency::Monthly { .. } => {}
+        Frequency::MonthlyByDay { .. } => {}
         Frequency::Yearly { .. } => {}
     }
     Ok(())

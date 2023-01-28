@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, Sub};
-use chrono::{Datelike, DateTime, Duration, Timelike, Utc, Weekday};
+use chrono::{Datelike, DateTime, Duration, Month, Timelike, Utc, Weekday};
 use crate::utils::{DateUtils, get_next_nth_weekday_in_range, potato, weekday_ordinal};
 
 pub enum Frequency {
@@ -29,9 +29,7 @@ pub enum Frequency {
     },
     Yearly {
         interval: i32,
-        by_month: i32,
-        by_day: Vec<Weekday>,
-        by_week_number: Vec<i32>,
+        by_monthly_date: Vec<MonthlyDate>,
     }
 }
 
@@ -96,6 +94,12 @@ impl Time {
     }
 }
 
+/// Representation of a monthly date (e.g. 1st of the month of January)
+pub struct MonthlyDate {
+    pub month: Month,
+    pub day: i32,
+}
+
 impl Frequency {
     pub(crate) fn is_valid(&self) -> Result<(), FrequencyErrors> {
         match self {
@@ -107,8 +111,8 @@ impl Frequency {
 
             Frequency::Monthly { interval, by_month_day, nth_weekdays } => validate_monthly(interval, &vec![]),
 
-            Frequency::Yearly { interval, by_month, by_day, by_week_number } => validate_yearly(
-                interval, by_month, by_day, by_week_number
+            Frequency::Yearly { interval, by_monthly_date} => validate_yearly(
+                interval, by_monthly_date
             ),
         }
     }
@@ -137,8 +141,8 @@ impl Frequency {
             Frequency::Monthly { interval, by_month_day, nth_weekdays } => _next_monthly_event(
                 current_date, *interval, &by_month_day, &nth_weekdays
             ),
-            Frequency::Yearly { interval, by_month, by_day, by_week_number} => next_yearly_event(
-                current_date, *interval, *by_month, &by_day, &by_week_number
+            Frequency::Yearly { interval, by_monthly_date } => next_yearly_event(
+                current_date, *interval, by_monthly_date
             )
         }
     }
@@ -280,7 +284,37 @@ fn _next_monthly_event(current_date: &DateTime<Utc>, interval: i32, by_month_day
     next_date
 }
 
-fn next_yearly_event(current_date: &DateTime<Utc>, interval: i32, by_month: i32, by_day: &Vec<Weekday>, by_week_number: &Vec<i32>) -> Option<DateTime<Utc>> {
+fn next_yearly_event(current_date: &DateTime<Utc>, interval: i32, by_monthly_date: &Vec<MonthlyDate>) -> Option<DateTime<Utc>> {
+
+    if !by_monthly_date.is_empty() {
+        for date in by_monthly_date {
+            let month_number = date.month.number_from_month();
+            let d = current_date
+                .with_month(month_number)
+                .unwrap()
+                .with_day(date.day as u32);
+            match d {
+                Some(d) => {
+                    if d > *current_date {
+                        return Some(d);
+                    }
+                }
+                None => return None
+            }
+        }
+
+        // No dates left in the year, so we need to add a year
+        let month_number = by_monthly_date[0].month.number_from_month();
+        let result = current_date
+            .with_month(month_number)
+            .unwrap()
+            .with_day(by_monthly_date[0].day as u32);
+        return match result {
+            Some(d) => d.shift_years(interval as i64),
+            None => None
+        }
+    }
+
     let next_date = current_date.shift_years(interval as i64);
     next_date
 }
@@ -345,7 +379,7 @@ fn validate_monthly(interval: &i32, by_month_day: &Vec<i32>) -> Result<(), Frequ
     Ok(())
 }
 
-fn validate_yearly(interval: &i32, by_month: &i32, by_day: &Vec<Weekday>, by_week_number: &Vec<i32>) -> Result<(), FrequencyErrors> {
+fn validate_yearly(interval: &i32, by_monthly_date: &Vec<MonthlyDate>) -> Result<(), FrequencyErrors> {
     Ok(())
 }
 

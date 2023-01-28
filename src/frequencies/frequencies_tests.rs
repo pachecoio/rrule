@@ -471,20 +471,75 @@ mod monthly_by_weekday {
 
 #[cfg(test)]
 mod yearly_frequencies {
+    use chrono::Month;
+    use crate::frequencies::frequencies::MonthlyDate;
     use super::*;
 
     #[test]
     fn once_a_year() {
         let f = Frequency::Yearly {
             interval: 1,
-            by_month: 0,
-            by_day: vec![],
-            by_week_number: vec![],
+            by_monthly_date: vec![],
         };
         let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let next_event = f.next_event(&date).unwrap();
         assert_eq!(next_event.day(), 1, "next event should be the 1st of the month");
         assert_eq!(next_event.month(), 1, "next event should be in the same month");
+        assert_eq!(next_event.year(), 2024, "next event should be in the next year");
+    }
+
+    #[test]
+    fn every_15th_january() {
+        let f = Frequency::Yearly {
+            interval: 1,
+            by_monthly_date: vec![
+                MonthlyDate {
+                    month: Month::January,
+                    day: 15,
+                },
+            ],
+        };
+        let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
+        let next_event = f.next_event(&date).unwrap();
+        assert_eq!(next_event.day(), 15, "next event should be the 15th of the month");
+        assert_eq!(next_event.month(), 1, "next event should be in the same month");
+        assert_eq!(next_event.year(), 2023, "next event should be in same year");
+
+        let next_event = f.next_event(&next_event).unwrap();
+        assert_eq!(next_event.day(), 15, "next event should be the 15th of the month");
+        assert_eq!(next_event.month(), 1, "next event should be in the same month");
+        assert_eq!(next_event.year(), 2024, "next event should be in the next year");
+    }
+
+    #[test]
+    fn test_every_1st_and_15th_of_june() {
+        let f = Frequency::Yearly {
+            interval: 1,
+            by_monthly_date: vec![
+                MonthlyDate {
+                    month: Month::June,
+                    day: 1,
+                },
+                MonthlyDate {
+                    month: Month::June,
+                    day: 15,
+                },
+            ],
+        };
+        let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
+        let next_event = f.next_event(&date).unwrap();
+        assert_eq!(next_event.day(), 1, "next event should be the 1st of the month");
+        assert_eq!(next_event.month(), 6, "next event should be in the same month");
+        assert_eq!(next_event.year(), 2023, "next event should be in same year");
+
+        let next_event = f.next_event(&next_event).unwrap();
+        assert_eq!(next_event.day(), 15, "next event should be the 15th of the month");
+        assert_eq!(next_event.month(), 6, "next event should be in the same month");
+        assert_eq!(next_event.year(), 2023, "next event should be in same year");
+
+        let next_event = f.next_event(&next_event).unwrap();
+        assert_eq!(next_event.day(), 1, "next event should be the 1st of the month");
+        assert_eq!(next_event.month(), 6, "next event should be in the same month");
         assert_eq!(next_event.year(), 2024, "next event should be in the next year");
     }
 }

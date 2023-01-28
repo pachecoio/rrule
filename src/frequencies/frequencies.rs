@@ -185,8 +185,18 @@ impl Frequency {
                 }
                 false
             },
-            Frequency::Yearly { .. } => {
-                true
+            Frequency::Yearly { by_monthly_date, .. } => {
+                if by_monthly_date.is_empty() {
+                    return true;
+                }
+                let month = date.month();
+                let day = date.day() as i32;
+                for monthly_date in by_monthly_date {
+                    if monthly_date.month.number_from_month() == month && monthly_date.day == day {
+                        return true;
+                    }
+                }
+                false
             }
         }
     }

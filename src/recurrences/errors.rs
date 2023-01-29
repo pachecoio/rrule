@@ -1,7 +1,5 @@
 use std::fmt::{Display, Formatter};
 
-
-
 #[derive(Debug)]
 pub struct RecurrenceInvalid {
     pub(crate) message: String,

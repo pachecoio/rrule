@@ -9,7 +9,7 @@ mod tests {
     use chrono::{DateTime, Duration, Utc};
     use crate::frequencies::Frequency;
     use crate::recurrences::{Recurrence, RecurrenceInvalid};
-    use super::*;
+    
 
     fn every_second_recurrence(start: DateTime<Utc>, end: Option<DateTime<Utc>>, duration: Option<Duration>) -> Result<Recurrence, RecurrenceInvalid> {
         let duration = duration.unwrap_or_else(|| Duration::seconds(1));
@@ -60,7 +60,7 @@ mod secondly_recurrences {
     use chrono::{DateTime, Duration, Utc};
     use crate::frequencies::Frequency;
     use crate::recurrences::Recurrence;
-    use super::*;
+    
 
     #[test]
     fn every_second() {
@@ -88,7 +88,7 @@ mod minutely_recurrences {
     use chrono::{DateTime, Duration, Utc};
     use crate::frequencies::Frequency;
     use crate::recurrences::Recurrence;
-    use super::*;
+    
 
     #[test]
     fn every_minute() {
@@ -116,7 +116,7 @@ mod hourly_recurrences {
     use chrono::{DateTime, Duration, Utc};
     use crate::frequencies::Frequency;
     use crate::recurrences::Recurrence;
-    use super::*;
+    
 
     #[test]
     fn every_hour() {
@@ -144,7 +144,7 @@ mod daily_recurrences {
     use chrono::{DateTime, Duration, Utc};
     use crate::frequencies::{Frequency, Time};
     use crate::recurrences::Recurrence;
-    use super::*;
+    
 
     #[test]
     fn every_day() {
@@ -197,7 +197,7 @@ mod weekly_recurrences {
     use chrono::{DateTime, Duration, Utc, Weekday};
     use crate::frequencies::Frequency;
     use crate::recurrences::Recurrence;
-    use super::*;
+    
 
     #[test]
     fn weekly_recurrence() {
@@ -249,7 +249,7 @@ mod monthly_recurrences {
     use chrono::{DateTime, Duration, Utc, Weekday};
     use crate::frequencies::{Frequency, NthWeekday};
     use crate::recurrences::Recurrence;
-    use super::*;
+    
 
     #[test]
     fn monthly_recurrence() {
@@ -332,7 +332,7 @@ mod yearly_recurrences {
     use chrono::{DateTime, Duration, Month, Utc};
     use crate::frequencies::{Frequency, MonthlyDate};
     use crate::recurrences::Recurrence;
-    use super::*;
+    
     
     #[test]
     fn test_once_a_year() {

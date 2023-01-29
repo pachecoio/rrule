@@ -1,7 +1,9 @@
-mod frequencies;
+mod models;
+mod errors;
+mod validations;
 mod frequencies_tests;
 
-pub use frequencies::{
+pub use models::{
     Frequency,
     Time,
     NthWeekday,

@@ -2,6 +2,8 @@ use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, Sub};
 use chrono::{Datelike, DateTime, Duration, Month, Timelike, Utc, Weekday};
+use crate::frequencies::errors::FrequencyErrors;
+use crate::frequencies::validations::{validate_daily, validate_hourly, validate_minutely, validate_monthly, validate_secondly, validate_weekly, validate_yearly};
 use crate::utils::{DateUtils, get_next_nth_weekday, weekday_ordinal};
 
 pub enum Frequency {
@@ -271,7 +273,6 @@ fn _next_monthly_event(current_date: &DateTime<Utc>, interval: i32, by_month_day
 }
 
 fn next_yearly_event(current_date: &DateTime<Utc>, interval: i32, by_monthly_date: &Vec<MonthlyDate>) -> Option<DateTime<Utc>> {
-
     if !by_monthly_date.is_empty() {
         for date in by_monthly_date {
             let month_number = date.month.number_from_month();
@@ -302,87 +303,4 @@ fn next_yearly_event(current_date: &DateTime<Utc>, interval: i32, by_monthly_dat
     }
 
     current_date.shift_years(interval as i64)
-}
-
-fn validate_secondly(interval: &i32) -> Result<(), FrequencyErrors> {
-    if *interval > 0 {
-        Ok(())
-    } else {
-        Err(FrequencyErrors::InvalidInterval {
-            message: "Interval must be greater than 0".to_string(),
-        })
-    }
-}
-
-fn validate_minutely(interval: &i32) -> Result<(), FrequencyErrors> {
-    if *interval > 0 {
-        Ok(())
-    } else {
-        Err(FrequencyErrors::InvalidInterval {
-            message: "Interval must be greater than 0".to_string(),
-        })
-    }
-}
-
-fn validate_hourly(interval: &i32) -> Result<(), FrequencyErrors> {
-    if *interval > 0 {
-        Ok(())
-    } else {
-        Err(FrequencyErrors::InvalidInterval {
-            message: "Interval must be greater than 0".to_string(),
-        })
-    }
-}
-
-fn validate_daily(interval: &i32, _by_time: &[Time]) -> Result<(), FrequencyErrors> {
-    if *interval <= 0 {
-        return Err(FrequencyErrors::InvalidInterval {
-            message: "Interval must be greater than 0".to_string(),
-        });
-    }
-    // Todo: Validate time
-    Ok(())
-}
-
-fn validate_weekly(interval: &i32, _by_day: &[Weekday]) -> Result<(), FrequencyErrors> {
-    if *interval <= 0 {
-        return Err(FrequencyErrors::InvalidInterval {
-            message: "Interval must be greater than 0".to_string(),
-        });
-    }
-    // Todo: Validate weekday
-    Ok(())
-}
-
-fn validate_monthly(interval: &i32, _by_month_day: &[i32]) -> Result<(), FrequencyErrors> {
-    if *interval <= 0 {
-        return Err(FrequencyErrors::InvalidInterval {
-            message: "Interval must be greater than 0".to_string(),
-        });
-    }
-    // Todo: Validate day of the month
-    Ok(())
-}
-
-fn validate_yearly(_interval: &i32, _by_monthly_date: &[MonthlyDate]) -> Result<(), FrequencyErrors> {
-    Ok(())
-}
-
-#[derive(Debug)]
-pub enum FrequencyErrors {
-    InvalidInterval {
-        message: String,
-    },
-    InvalidTime {
-        message: String,
-    },
-}
-
-impl Display for FrequencyErrors {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            FrequencyErrors::InvalidInterval { message } => write!(f, "Invalid interval: {message}"),
-            FrequencyErrors::InvalidTime { message } => write!(f, "Invalid time: {message}"),
-        }
-    }
 }

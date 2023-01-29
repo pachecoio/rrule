@@ -1,10 +1,14 @@
-use std::str::FromStr;
-use chrono::{DateTime, Duration, Utc};
-use crate::frequencies::Frequency;
-use crate::recurrences::models::Recurrence;
+
+
+
+
 
 #[cfg(test)]
 mod secondly_validations {
+    use std::str::FromStr;
+    use chrono::{DateTime, Duration, Utc};
+    use crate::frequencies::Frequency;
+    use crate::recurrences::Recurrence;
     use super::*;
 
     #[test]
@@ -42,6 +46,10 @@ mod secondly_validations {
 
 #[cfg(test)]
 mod minutely_validations {
+    use std::str::FromStr;
+    use chrono::{DateTime, Duration, Utc};
+    use crate::frequencies::Frequency;
+    use crate::recurrences::Recurrence;
     use super::*;
 
     #[test]
@@ -79,6 +87,10 @@ mod minutely_validations {
 
 #[cfg(test)]
 mod hourly_validations {
+    use std::str::FromStr;
+    use chrono::{DateTime, Duration, Utc};
+    use crate::frequencies::Frequency;
+    use crate::recurrences::Recurrence;
     use super::*;
 
     #[test]
@@ -116,7 +128,10 @@ mod hourly_validations {
 
 #[cfg(test)]
 mod daily_validations {
-    use crate::frequencies::Time;
+    use std::str::FromStr;
+    use chrono::{DateTime, Duration, Utc};
+    use crate::frequencies::{Frequency, Time};
+    use crate::recurrences::Recurrence;
     use super::*;
 
     #[test]
@@ -196,7 +211,10 @@ mod daily_validations {
 
 #[cfg(test)]
 mod weekly_validations {
-    use chrono::Weekday;
+    use std::str::FromStr;
+    use chrono::{DateTime, Duration, Utc, Weekday};
+    use crate::frequencies::Frequency;
+    use crate::recurrences::Recurrence;
     use super::*;
 
     #[test]
@@ -257,8 +275,10 @@ mod weekly_validations {
 
 #[cfg(test)]
 mod monthly_validations {
-    use chrono::Weekday;
-    use crate::frequencies::NthWeekday;
+    use std::str::FromStr;
+    use chrono::{DateTime, Duration, Utc, Weekday};
+    use crate::frequencies::{Frequency, NthWeekday};
+    use crate::recurrences::Recurrence;
     use super::*;
     
     #[test]

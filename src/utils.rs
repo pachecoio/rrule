@@ -1,4 +1,4 @@
-use std::cmp::max;
+
 use std::ops::{Add, Sub};
 use chrono::{Datelike, DateTime, Duration, Utc, Weekday};
 use crate::frequencies::NthWeekday;
@@ -38,7 +38,7 @@ impl DateUtils for DateTime<Utc> {
         let mut diff = self.month() as i32 + months as i32;
 
         // If the months shift is bigger than a year we need to shift the year
-        let mut years = if diff > 12 {
+        let years = if diff > 12 {
             diff / 12
         } else if diff < 1 {
             (diff / 12) - 1
@@ -138,16 +138,11 @@ pub fn get_next_nth_weekday(current_date: &DateTime<Utc>, interval: i64, nth_wee
         return Some(res);
     }
 
-    match res.with_weekday(ordered_weekdays[0].weekday) {
-        None => None,
-        Some(d) => {
-            if d < res {
-                d.shift_weeks(1)
-            } else {
-                Some(d)
-            }
-        }
+    let d = res.with_weekday(ordered_weekdays[0].weekday)?;
+    if d < res {
+        return d.shift_weeks(1);
     }
+    Some(d)
 }
 
 fn order_nth_weekdays(nth_weekdays: &[NthWeekday]) -> Vec<NthWeekday> {

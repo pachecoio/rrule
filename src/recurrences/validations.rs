@@ -222,7 +222,7 @@ pub fn validate_monthly_nth_weekday_duration(nth_weekday: &NthWeekday, next_mont
 
     let projected_date = date + *duration;
 
-    let mut next_date = get_next_nth_weekday(
+    let next_date = get_next_nth_weekday(
         &date,
         1,
         &vec![next_monthday.clone()]

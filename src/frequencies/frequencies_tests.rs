@@ -1,9 +1,12 @@
-use crate::frequencies::{Frequency, Time};
-use std::str::FromStr;
-use chrono::{DateTime, Timelike, Utc, Datelike, Weekday};
+
+
+
 
 #[cfg(test)]
 mod secondly_frequency {
+    use std::str::FromStr;
+    use chrono::{DateTime, Timelike, Utc};
+    use crate::frequencies::Frequency;
     use super::*;
 
     #[test]
@@ -47,7 +50,8 @@ mod secondly_frequency {
 #[cfg(test)]
 mod minutely_frequency {
     use std::str::FromStr;
-    use chrono::Timelike;
+    use chrono::{DateTime, Timelike, Utc};
+    use crate::frequencies::Frequency;
     use super::*;
 
     #[test]
@@ -91,7 +95,8 @@ mod minutely_frequency {
 #[cfg(test)]
 mod hourly_frequency {
     use std::str::FromStr;
-    use chrono::{Datelike, Timelike};
+    use chrono::{Datelike, DateTime, Timelike, Utc};
+    use crate::frequencies::Frequency;
     use super::*;
 
     #[test]
@@ -136,7 +141,8 @@ mod hourly_frequency {
 #[cfg(test)]
 mod daily_frequency {
     use std::str::FromStr;
-    use chrono::Datelike;
+    use chrono::{Datelike, DateTime, Utc};
+    use crate::frequencies::Frequency;
     use super::*;
 
     #[test]
@@ -183,6 +189,9 @@ mod daily_frequency {
 
 #[cfg(test)]
 mod daily_frequencies_by_hour {
+    use std::str::FromStr;
+    use chrono::{Datelike, DateTime, Timelike, Utc};
+    use crate::frequencies::{Frequency, Time};
     use super::*;
 
     #[test]
@@ -220,7 +229,8 @@ mod daily_frequencies_by_hour {
 mod weekly_frequency {
     use std::ops::Add;
     use std::str::FromStr;
-    use chrono::{Datelike, Duration, Timelike};
+    use chrono::{Datelike, DateTime, Duration, Timelike, Utc};
+    use crate::frequencies::Frequency;
     use super::*;
 
     #[test]
@@ -264,6 +274,9 @@ mod weekly_frequency {
 
 #[cfg(test)]
 mod weekly_by_day {
+    use std::str::FromStr;
+    use chrono::{Datelike, DateTime, Utc, Weekday};
+    use crate::frequencies::Frequency;
     use super::*;
 
     #[test]
@@ -298,7 +311,8 @@ mod weekly_by_day {
 #[cfg(test)]
 mod monthly_frequency {
     use std::str::FromStr;
-    use chrono::{Datelike, Duration, Timelike};
+    use chrono::{Datelike, DateTime, Duration, Timelike, Utc};
+    use crate::frequencies::Frequency;
     use super::*;
 
     #[test]
@@ -344,6 +358,8 @@ mod monthly_frequency {
 #[cfg(test)]
 mod monthly_by_month_day {
     use std::str::FromStr;
+    use chrono::{Datelike, DateTime, Utc};
+    use crate::frequencies::Frequency;
     use super::*;
 
     #[test]
@@ -400,7 +416,8 @@ mod monthly_by_month_day {
 #[cfg(test)]
 mod monthly_by_weekday {
     use std::str::FromStr;
-    use crate::frequencies::NthWeekday;
+    use chrono::{Datelike, DateTime, Utc, Weekday};
+    use crate::frequencies::{Frequency, NthWeekday};
     use super::*;
 
     #[test]
@@ -471,8 +488,10 @@ mod monthly_by_weekday {
 
 #[cfg(test)]
 mod yearly_frequencies {
-    use chrono::Month;
+    use std::str::FromStr;
+    use chrono::{Datelike, DateTime, Month, Utc};
     use crate::frequencies::frequencies::MonthlyDate;
+    use crate::frequencies::Frequency;
     use super::*;
 
     #[test]
@@ -547,7 +566,8 @@ mod yearly_frequencies {
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
-    use crate::frequencies::NthWeekday;
+    use chrono::{DateTime, Utc, Weekday};
+    use crate::frequencies::{Frequency, NthWeekday, Time};
     use super::*;
 
     #[test]

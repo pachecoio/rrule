@@ -327,7 +327,7 @@ mod test_shift_years {
 }
 
 #[cfg(test)]
-mod test_refactor {
+mod test_nth_weekdays {
     use std::str::FromStr;
     use super::*;
 

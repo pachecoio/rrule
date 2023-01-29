@@ -46,13 +46,11 @@ impl DateUtils for DateTime<Utc> {
             0
         };
 
-        if diff == 0 {
-            diff = 12;
-        } else if diff > 0 {
-            diff %= 12;
-        } else {
-            diff = 12 + (diff % 12) - 1;
-        }
+        diff = match diff {
+            0 => 12,
+            1.. => diff % 12,
+            _ => 12 + (diff % 12) - 1
+        };
 
         match self.with_month(diff as u32) {
             None => None,
@@ -128,7 +126,7 @@ pub fn get_next_nth_weekday(current_date: &DateTime<Utc>, interval: i64, nth_wee
         } else if nth_weekday.week_number > week_number {
             let days_diff = nth_weekday.weekday.num_days_from_sunday() as i64 - weekday.num_days_from_sunday() as i64;
             let weeks_diff = nth_weekday.week_number - week_number;
-            return current_date.shift_days(days_diff as i64)?.shift_weeks(weeks_diff as i64)
+            return current_date.shift_days(days_diff)?.shift_weeks(weeks_diff as i64)
         }
     }
     // Return first supported nth weekday of next month
@@ -152,9 +150,9 @@ pub fn get_next_nth_weekday(current_date: &DateTime<Utc>, interval: i64, nth_wee
     }
 }
 
-fn order_nth_weekdays(nth_weekdays: &Vec<NthWeekday>) -> Vec<NthWeekday> {
-    let mut result = nth_weekdays.clone();
-    result.sort_by(|a, b| a.cmp(&b));
+fn order_nth_weekdays(nth_weekdays: &[NthWeekday]) -> Vec<NthWeekday> {
+    let mut result = nth_weekdays.to_owned();
+    result.sort();
     Vec::from(&result[..])
 }
 

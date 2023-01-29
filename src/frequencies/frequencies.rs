@@ -77,13 +77,13 @@ impl Time {
         let mut parts = time_str.split(':');
         let hour = match parts.next() {
             None => return Err(FrequencyErrors::InvalidTime {
-                message: format!("Invalid time: {}", time_str),
+                message: format!("Invalid time: {time_str}"),
             }),
             Some(hour) => hour.parse::<i32>().unwrap()
         };
         let minute = match parts.next() {
             None => return Err(FrequencyErrors::InvalidTime {
-                message: format!("Invalid time: {}", time_str)
+                message: format!("Invalid time: {time_str}")
             }),
             Some(minute) => minute.parse::<i32>().unwrap()
         };
@@ -108,7 +108,7 @@ impl Frequency {
             Frequency::Hourly { interval } => validate_hourly(interval),
             Frequency::Daily { interval, by_time } => validate_daily(interval, by_time),
             Frequency::Weekly { interval, by_day } => validate_weekly(interval, by_day),
-            Frequency::Monthly { interval, by_month_day, nth_weekdays } => validate_monthly(interval, &vec![]),
+            Frequency::Monthly { interval, by_month_day, nth_weekdays } => validate_monthly(interval, &[]),
             Frequency::Yearly { interval, by_monthly_date} => validate_yearly(
                 interval, by_monthly_date
             ),
@@ -131,13 +131,13 @@ impl Frequency {
                 Some(next_date)
             },
             Frequency::Daily { interval, by_time } => next_daily_event(
-                current_date, *interval, &by_time
+                current_date, *interval, by_time
             ),
             Frequency::Weekly { interval, by_day } => next_weekly_event(
-                current_date, *interval, &by_day
+                current_date, *interval, by_day
             ),
             Frequency::Monthly { interval, by_month_day, nth_weekdays } => _next_monthly_event(
-                current_date, *interval, &by_month_day, &nth_weekdays
+                current_date, *interval, by_month_day, nth_weekdays
             ),
             Frequency::Yearly { interval, by_monthly_date } => next_yearly_event(
                 current_date, *interval, by_monthly_date
@@ -301,8 +301,7 @@ fn next_yearly_event(current_date: &DateTime<Utc>, interval: i32, by_monthly_dat
         }
     }
 
-    let next_date = current_date.shift_years(interval as i64);
-    next_date
+    current_date.shift_years(interval as i64)
 }
 
 fn validate_secondly(interval: &i32) -> Result<(), FrequencyErrors> {
@@ -335,7 +334,7 @@ fn validate_hourly(interval: &i32) -> Result<(), FrequencyErrors> {
     }
 }
 
-fn validate_daily(interval: &i32, by_time: &Vec<Time>) -> Result<(), FrequencyErrors> {
+fn validate_daily(interval: &i32, by_time: &[Time]) -> Result<(), FrequencyErrors> {
     if *interval <= 0 {
         return Err(FrequencyErrors::InvalidInterval {
             message: "Interval must be greater than 0".to_string(),
@@ -345,7 +344,7 @@ fn validate_daily(interval: &i32, by_time: &Vec<Time>) -> Result<(), FrequencyEr
     Ok(())
 }
 
-fn validate_weekly(interval: &i32, by_day: &Vec<Weekday>) -> Result<(), FrequencyErrors> {
+fn validate_weekly(interval: &i32, by_day: &[Weekday]) -> Result<(), FrequencyErrors> {
     if *interval <= 0 {
         return Err(FrequencyErrors::InvalidInterval {
             message: "Interval must be greater than 0".to_string(),
@@ -355,7 +354,7 @@ fn validate_weekly(interval: &i32, by_day: &Vec<Weekday>) -> Result<(), Frequenc
     Ok(())
 }
 
-fn validate_monthly(interval: &i32, by_month_day: &Vec<i32>) -> Result<(), FrequencyErrors> {
+fn validate_monthly(interval: &i32, by_month_day: &[i32]) -> Result<(), FrequencyErrors> {
     if *interval <= 0 {
         return Err(FrequencyErrors::InvalidInterval {
             message: "Interval must be greater than 0".to_string(),
@@ -365,7 +364,7 @@ fn validate_monthly(interval: &i32, by_month_day: &Vec<i32>) -> Result<(), Frequ
     Ok(())
 }
 
-fn validate_yearly(interval: &i32, by_monthly_date: &Vec<MonthlyDate>) -> Result<(), FrequencyErrors> {
+fn validate_yearly(interval: &i32, by_monthly_date: &[MonthlyDate]) -> Result<(), FrequencyErrors> {
     Ok(())
 }
 

@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use chrono::Weekday;
 use crate::frequencies::errors::FrequencyErrors;
 use crate::frequencies::{MonthlyDate, Time};
@@ -32,13 +33,24 @@ pub fn validate_hourly(interval: &i32) -> Result<(), FrequencyErrors> {
     }
 }
 
-pub fn validate_daily(interval: &i32, _by_time: &[Time]) -> Result<(), FrequencyErrors> {
+pub fn validate_daily(interval: &i32, by_time: &[Time]) -> Result<(), FrequencyErrors> {
     if *interval <= 0 {
         return Err(FrequencyErrors::InvalidInterval {
             message: "Interval must be greater than 0".to_string(),
         });
     }
-    // Todo: Validate time
+    let mut unique_times: HashSet<Time> = HashSet::new();
+    for time in by_time {
+        let t = Time {
+            hour: time.hour,
+            minute: time.minute,
+        };
+        if !unique_times.insert(t) {
+            return Err(FrequencyErrors::InvalidTime {
+                message: "Repeated time".to_string(),
+            });
+        }
+    }
     Ok(())
 }
 

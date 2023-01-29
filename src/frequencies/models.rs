@@ -69,6 +69,7 @@ impl Ord for NthWeekday {
     }
 }
 
+#[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct Time {
     pub hour: i32,
     pub minute: i32,

@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use chrono::{DateTime, Duration, Utc};
 use crate::frequencies::Frequency;
-use crate::recurrences::recurrences::Recurrence;
+use crate::recurrences::models::Recurrence;
 
 #[cfg(test)]
 mod secondly_validations {

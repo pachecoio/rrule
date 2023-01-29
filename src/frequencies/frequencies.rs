@@ -108,9 +108,7 @@ impl Frequency {
             Frequency::Hourly { interval } => validate_hourly(interval),
             Frequency::Daily { interval, by_time } => validate_daily(interval, by_time),
             Frequency::Weekly { interval, by_day } => validate_weekly(interval, by_day),
-
             Frequency::Monthly { interval, by_month_day, nth_weekdays } => validate_monthly(interval, &vec![]),
-
             Frequency::Yearly { interval, by_monthly_date} => validate_yearly(
                 interval, by_monthly_date
             ),
@@ -384,8 +382,8 @@ pub enum FrequencyErrors {
 impl Display for FrequencyErrors {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            FrequencyErrors::InvalidInterval { message } => write!(f, "Invalid interval: {}", message),
-            FrequencyErrors::InvalidTime { message } => write!(f, "Invalid time: {}", message),
+            FrequencyErrors::InvalidInterval { message } => write!(f, "Invalid interval: {message}"),
+            FrequencyErrors::InvalidTime { message } => write!(f, "Invalid time: {message}"),
         }
     }
 }

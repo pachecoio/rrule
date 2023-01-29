@@ -1,7 +1,7 @@
 use std::str::FromStr;
 use chrono::{DateTime, Duration, Utc, Weekday};
 use crate::frequencies::{Frequency, Time};
-use crate::recurrences::recurrences::{Recurrence, RecurrenceInvalid};
+use crate::recurrences::{Recurrence, RecurrenceInvalid};
 
 #[cfg(test)]
 mod tests {

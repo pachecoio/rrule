@@ -158,7 +158,7 @@ mod daily_recurrences {
             ],
         };
         let recurrence = Recurrence::new(frequency, start, Some(end), Some(
-            Duration::days(1)
+            Duration::hours(1)
         )).unwrap();
         let dates: Vec<DateTime<Utc>> = recurrence.collect();
         assert_eq!(dates.len(), 4);
@@ -204,7 +204,7 @@ mod weekly_recurrences {
             by_day: vec![Weekday::Mon, Weekday::Wed, Weekday::Fri],
         };
         let recurrence = Recurrence::new(frequency, start, Some(end), Some(
-            Duration::weeks(1)
+            Duration::hours(1)
         )).unwrap();
         let dates: Vec<DateTime<Utc>> = recurrence.collect();
         assert_eq!(dates.len(), 6);
@@ -286,7 +286,7 @@ mod monthly_recurrences {
             ],
         };
         let recurrence = Recurrence::new(frequency, start, Some(end), Some(
-            Duration::weeks(1)
+            Duration::hours(1)
         )).unwrap();
         let dates: Vec<DateTime<Utc>> = recurrence.collect();
         assert_eq!(dates.len(), 4);

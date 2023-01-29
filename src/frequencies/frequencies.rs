@@ -2,7 +2,7 @@ use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 use std::ops::{Add, Sub};
 use chrono::{Datelike, DateTime, Duration, Month, Timelike, Utc, Weekday};
-use crate::utils::{DateUtils, get_next_nth_weekday_in_range, potato, weekday_ordinal};
+use crate::utils::{DateUtils, get_next_nth_weekday, weekday_ordinal};
 
 pub enum Frequency {
     Secondly {
@@ -246,28 +246,6 @@ fn next_weekly_event(current_date: &DateTime<Utc>, interval: i32, by_day: &Vec<W
     Some(next_date)
 }
 
-fn next_monthly_event(current_date: &DateTime<Utc>, interval: i32, by_month_day: &Vec<i32>, by_day: &Vec<Weekday>, by_week_number: &Vec<i32>) -> Option<DateTime<Utc>> {
-    let mut next_date = current_date.shift_months(interval as i64);
-    if !by_month_day.is_empty() {
-        let current_month_day = current_date.day() as i32;
-        for day in by_month_day {
-            if *day > current_month_day {
-                if let Some(d) = current_date.with_day(*day as u32) {
-                    return Some(d);
-                }
-            }
-        }
-        // No days left in the month, so we need to add a month
-        if let Some(d) = current_date.with_day(by_month_day[0] as u32) {
-            return d.shift_months(interval as i64);
-        }
-    }
-    if !by_day.is_empty() || !by_week_number.is_empty() {
-        return get_next_nth_weekday_in_range(current_date, by_day, by_week_number)
-    }
-    next_date
-}
-
 fn _next_monthly_event(current_date: &DateTime<Utc>, interval: i32, by_month_day: &Vec<i32>, nth_weekdays: &Vec<NthWeekday>) -> Option<DateTime<Utc>> {
     let mut next_date = current_date.shift_months(interval as i64);
     if !by_month_day.is_empty() {
@@ -285,7 +263,7 @@ fn _next_monthly_event(current_date: &DateTime<Utc>, interval: i32, by_month_day
         }
     }
     if !nth_weekdays.is_empty() {
-        return potato(
+        return get_next_nth_weekday(
             current_date,
             interval as i64,
             nth_weekdays,

@@ -326,9 +326,9 @@ mod monthly_frequency {
     #[test]
     fn every_month_collect_events() {
         let f = Frequency::Monthly { interval: 1, by_month_day: vec![], nth_weekdays: vec![] };
-        let now = Utc::now();
-        let next_event = f.next_event(&now);
-        assert_eq!(next_event.unwrap().month(), now.month() + 1);
+        let date = DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap();
+        let next_event = f.next_event(&date);
+        assert_eq!(next_event.unwrap().month(), date.month() + 1);
     }
 
     #[test]

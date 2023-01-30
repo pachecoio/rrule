@@ -8,7 +8,34 @@ use crate::recurrences::validations::{validate_duration, validate_recurrence_per
 
 const MAX_DATE: &str = "9999-12-31T23:59:59Z";
 
+/// An Iterator-type struct that represents a recurrence of events.
+/// It can be used to collect/iterate over all the events that match the recurrence rules
+/// between a start and end date.
+///
+/// Examples:
+/// ```
+/// use std::str::FromStr;
+/// use chrono::{DateTime, Utc};
+/// use rrule::{Recurrence, Frequency};
+///
+/// let once_a_day = Frequency::Daily {interval: 1, by_time: vec![]};
+/// let start_date = DateTime::<Utc>::from_str("2023-01-01T12:00:00Z").unwrap();
+/// let end_date = DateTime::<Utc>::from_str("2023-01-03T23:59:00Z").unwrap();
+///
+/// let everyday_during_first_3_days_of_january = Recurrence::new(
+///     once_a_day,
+///     start_date,
+///     Some(end_date),
+///     None
+/// );
+/// let events: Vec<DateTime<Utc>> = everyday_during_first_3_days_of_january
+///     .unwrap()
+///     .collect();
+/// assert_eq!(events.len(), 3);
+///
+/// ```
 pub struct Recurrence {
+    /// Represents the frequency rules of the recurrence
     pub(crate) frequency: Frequency,
 
     /// Start date of the recurrences

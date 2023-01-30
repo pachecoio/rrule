@@ -90,6 +90,24 @@ impl Recurrence {
 impl Iterator for Recurrence {
     type Item = DateTime<Utc>;
 
+    /// Returns the next event date in the recurrence.
+    /// Returns None if there are no more events in the recurrence.
+    /// Examples:
+    /// ```
+    /// use chrono::DateTime;
+    /// use rrule::{Recurrence, Frequency};
+    ///
+    /// let once_a_day = Frequency::Daily {interval: 1, by_time: vec![]};
+    /// let start_date = chrono::Utc::now();
+    /// let end_date = start_date + chrono::Duration::days(2);
+    ///
+    /// let mut  recurrence = Recurrence::new(once_a_day, start_date, Some(end_date), None).unwrap();
+    /// let first_event = recurrence.next().unwrap();
+    /// assert_eq!(first_event, start_date);
+    ///
+    /// let second_event = recurrence.next().unwrap();
+    /// assert_eq!(second_event, start_date + chrono::Duration::days(1));
+    /// ```
     fn next(&mut self) -> Option<Self::Item> {
         let current_date = match self.current_date {
             None => {

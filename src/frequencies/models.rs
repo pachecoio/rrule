@@ -7,6 +7,23 @@ use crate::frequencies::errors::FrequencyErrors;
 use crate::frequencies::validations::{validate_daily, validate_hourly, validate_minutely, validate_monthly, validate_secondly, validate_weekly, validate_yearly};
 use crate::utils::{DateUtils, get_next_nth_weekday, weekday_ordinal};
 
+/// Representation of the frequency of a recurrence.
+/// E.g. Once a day, Twice a week, etc.
+///
+/// Examples:
+/// ```
+/// use rrule::{Frequency};
+///
+/// let once_a_day = Frequency::Daily {interval: 1, by_time: vec![]};
+/// assert_eq!(once_a_day.to_string(), "Once a day");
+///
+/// let three_times_a_month = Frequency::Monthly {
+///     interval: 1,
+///     by_month_day: vec![1, 10, 20],
+///     nth_weekdays: vec![]
+/// };
+/// assert_eq!(three_times_a_month.to_string(), "3 times a month");
+/// ```
 pub enum Frequency {
     Secondly {
         interval: i32,
@@ -70,6 +87,8 @@ impl Ord for NthWeekday {
     }
 }
 
+/// Representation of a time containing hour:minute
+/// E.g. 12:00, 23:59, etc.
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct Time {
     pub hour: i32,
@@ -98,14 +117,16 @@ impl Time {
     }
 }
 
-/// Representation of a monthly date (e.g. 1st of the month of January)
+/// Representation of a monthly date
+/// E.g. 1st of January, 2nd of February, etc.
 pub struct MonthlyDate {
     pub month: Month,
     pub day: i32,
 }
 
 impl Frequency {
-    pub(crate) fn is_valid(&self) -> Result<(), FrequencyErrors> {
+    /// Verifies if the frequency is valid.
+    pub fn is_valid(&self) -> Result<(), FrequencyErrors> {
         match self {
             Frequency::Secondly { interval } => validate_secondly(interval),
             Frequency::Minutely { interval } => validate_minutely(interval),
@@ -120,7 +141,9 @@ impl Frequency {
     }
 
     /// Returns the next event date for the current frequencies config given the current date.
-    pub(crate) fn next_event(&self, current_date: &DateTime<Utc>) -> Option<DateTime<Utc>> {
+    /// Returns None if there is no next event.
+    /// E.g. If the frequency is once a day and the current date is 2020-01-01, the next event date will be 2020-01-02.
+    pub fn next_event(&self, current_date: &DateTime<Utc>) -> Option<DateTime<Utc>> {
         match self {
             Frequency::Secondly { interval } => {
                 let next_date = current_date.add(chrono::Duration::seconds(*interval as i64));
@@ -149,7 +172,24 @@ impl Frequency {
         }
     }
 
-    pub(crate) fn contains(&self, date: &DateTime<Utc>) -> bool {
+    /// Verifies if the specified date is a valid event date for the current frequency.
+    /// E.g. If the frequency is once a day and the date is 2023-01-01, the method will return true.
+    /// If the frequency is Once a week on Monday and the date is 2023-01-01, the method will return false
+    /// because the date is not a Monday.
+    ///
+    /// ```
+    /// use std::str::FromStr;
+    /// use rrule::Frequency;
+    /// use chrono::{Utc, DateTime, Duration, Weekday};
+    ///
+    /// let once_a_day = Frequency::Daily {interval: 1,by_time: vec![]};
+    /// let sunday = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
+    /// assert!(once_a_day.contains(&sunday));
+    ///
+    /// let every_monday = Frequency::Weekly {interval: 1, by_day: vec![Weekday::Mon]};
+    /// assert!(!every_monday.contains(&sunday));
+    /// ```
+    pub fn contains(&self, date: &DateTime<Utc>) -> bool {
         match self {
             Frequency::Secondly { .. } => true,
             Frequency::Minutely { .. } => true,

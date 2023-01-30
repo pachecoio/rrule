@@ -8,6 +8,9 @@ pub enum FrequencyErrors {
     InvalidTime {
         message: String,
     },
+    InvalidDay {
+        message: String,
+    },
 }
 
 impl Display for FrequencyErrors {
@@ -15,6 +18,7 @@ impl Display for FrequencyErrors {
         match self {
             FrequencyErrors::InvalidInterval { message } => write!(f, "Invalid interval: {message}"),
             FrequencyErrors::InvalidTime { message } => write!(f, "Invalid time: {message}"),
+            FrequencyErrors::InvalidDay { message } => write!(f, "Invalid day: {message}"),
         }
     }
 }

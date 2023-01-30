@@ -33,3 +33,91 @@ mod test_daily {
         assert!(freq.is_valid().is_err());
     }
 }
+
+#[cfg(test)]
+mod test_weekly {
+    use chrono::Weekday;
+    use crate::frequencies::{Frequency};
+
+    #[test]
+    fn validate_weekly() {
+        let freq = Frequency::Weekly {
+            interval: 1,
+            by_day: vec![],
+        };
+        assert!(freq.is_valid().is_ok());
+    }
+
+    #[test]
+    fn validate_weekly_with_invalid_interval() {
+        let freq = Frequency::Weekly {
+            interval: 0,
+            by_day: vec![],
+        };
+        assert!(freq.is_valid().is_err());
+    }
+
+    #[test]
+    fn validate_weekly_with_repeated_days() {
+        let freq = Frequency::Weekly {
+            interval: 1,
+            by_day: vec![
+                Weekday::Mon,
+                Weekday::Mon,
+            ],
+        };
+        assert!(freq.is_valid().is_err());
+    }
+}
+
+#[cfg(test)]
+mod test_monthly {
+    use chrono::{Month, Weekday};
+    use crate::frequencies::{Frequency, MonthlyDate, NthWeekday};
+
+    #[test]
+    fn validate_monthly() {
+        let freq = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![],
+            nth_weekdays: vec![],
+        };
+        assert!(freq.is_valid().is_ok());
+    }
+
+    #[test]
+    fn validate_monthly_with_invalid_interval() {
+        let freq = Frequency::Monthly {
+            interval: 0,
+            by_month_day: vec![],
+            nth_weekdays: vec![],
+        };
+        assert!(freq.is_valid().is_err());
+    }
+
+    #[test]
+    fn validate_monthly_with_repeated_month_days() {
+        let freq = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![
+                15,
+                15
+            ],
+            nth_weekdays: vec![],
+        };
+        assert!(freq.is_valid().is_err());
+    }
+
+    #[test]
+    fn validate_monthly_with_repeated_nth_weekdays() {
+        let freq = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![],
+            nth_weekdays: vec![
+                NthWeekday::new(Weekday::Mon, 1),
+                NthWeekday::new(Weekday::Mon, 1),
+            ],
+        };
+        assert!(freq.is_valid().is_err());
+    }
+}

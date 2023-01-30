@@ -37,7 +37,7 @@ pub enum Frequency {
 
 /// Representation of the nth day of the week
 /// E.g. 2nd Monday, 3rd Tuesday, etc.
-#[derive(Debug, PartialEq, Eq, Clone)]
+#[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub struct NthWeekday {
     pub week_number: i32,
     pub weekday: Weekday,
@@ -111,7 +111,7 @@ impl Frequency {
             Frequency::Hourly { interval } => validate_hourly(interval),
             Frequency::Daily { interval, by_time } => validate_daily(interval, by_time),
             Frequency::Weekly { interval, by_day } => validate_weekly(interval, by_day),
-            Frequency::Monthly { interval, by_month_day: _, nth_weekdays: _ } => validate_monthly(interval, &[]),
+            Frequency::Monthly { interval, by_month_day, nth_weekdays } => validate_monthly(interval, by_month_day, nth_weekdays),
             Frequency::Yearly { interval, by_monthly_date} => validate_yearly(
                 interval, by_monthly_date
             ),

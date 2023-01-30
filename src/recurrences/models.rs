@@ -54,8 +54,25 @@ pub struct Recurrence {
 }
 
 impl Recurrence {
+    /// Validates and creates a new Recurrence instance.
+    /// Returns an error if the recurrence rules are invalid.
+    /// Examples:
+    /// ```
+    /// use rrule::{Recurrence, Frequency};
+    ///
+    /// let invalid_frequency = Frequency::Daily {interval: 0, by_time: vec![]};
+    /// let recurrence = Recurrence::new(invalid_frequency, chrono::Utc::now(), None, None);
+    /// assert!(recurrence.is_err());
+    ///
+    /// let valid_frequency = Frequency::Daily {interval: 1, by_time: vec![]};
+    /// let recurrence = Recurrence::new(valid_frequency, chrono::Utc::now(), None, None);
+    /// assert!(recurrence.is_ok());
+    /// ```
     pub fn new(frequency: Frequency, start: DateTime<Utc>, end: Option<DateTime<Utc>>, duration: Option<Duration>) -> Result<Self, RecurrenceInvalid> {
         let end = end.unwrap_or_else(|| DateTime::<Utc>::from_str(MAX_DATE).unwrap());
+        if frequency.is_valid().is_err() {
+            return Err(RecurrenceInvalid { message: format!("{}", frequency.is_valid().unwrap_err().to_string()) });
+        }
         validate_recurrence_period(&start, &end)?;
 
         let duration = duration.unwrap_or_else(|| Duration::hours(1));

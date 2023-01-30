@@ -132,7 +132,21 @@ mod daily_validations {
     use chrono::{DateTime, Duration, Utc};
     use crate::frequencies::{Frequency, Time};
     use crate::recurrences::Recurrence;
-    
+
+    #[test]
+    fn invalid_interval() {
+        let freq = Frequency::Daily {
+            interval: 0,
+            by_time: vec![],
+        };
+        let recurrence = Recurrence::new(
+            freq,
+            DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
+            None,
+            None
+        );
+        assert!(recurrence.is_err());
+    }
 
     #[test]
     fn every_day() {

@@ -2,7 +2,7 @@ use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
 pub struct RecurrenceInvalid {
-    pub(crate) message: String,
+    pub message: String,
 }
 
 impl Display for RecurrenceInvalid {

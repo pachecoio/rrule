@@ -36,20 +36,20 @@ const MAX_DATE: &str = "9999-12-31T23:59:59Z";
 /// ```
 pub struct Recurrence {
     /// Represents the frequency rules of the recurrence
-    pub(crate) frequency: Frequency,
+    pub frequency: Frequency,
 
     /// Start date of the recurrences
     ///
     /// This won't necessarily be the first event date, as that depends on the frequencies
     /// configuration defined.
-    pub(crate) start: DateTime<Utc>,
+    pub start: DateTime<Utc>,
 
     /// Current event date to be returned by next()
     /// Starts as None, and is set to the first event date once next() is called
-    pub(crate) current_date: Option<DateTime<Utc>>,
+    pub current_date: Option<DateTime<Utc>>,
 
     /// End date of the recurrences
-    pub(crate) end: DateTime<Utc>,
+    pub end: DateTime<Utc>,
     duration: Duration
 }
 

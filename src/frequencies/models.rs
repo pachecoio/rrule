@@ -62,7 +62,7 @@ pub struct NthWeekday {
 }
 
 impl NthWeekday {
-    pub(crate) fn new(weekday: Weekday, week_number: i32) -> NthWeekday {
+    pub fn new(weekday: Weekday, week_number: i32) -> NthWeekday {
         NthWeekday {
             week_number,
             weekday,
@@ -96,7 +96,7 @@ pub struct Time {
 }
 
 impl Time {
-    pub(crate) fn from_str(time_str: &str) -> Result<Self, FrequencyErrors> {
+    pub fn from_str(time_str: &str) -> Result<Self, FrequencyErrors> {
         let mut parts = time_str.split(':');
         let hour = match parts.next() {
             None => return Err(FrequencyErrors::InvalidTime {

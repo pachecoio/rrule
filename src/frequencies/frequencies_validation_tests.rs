@@ -72,8 +72,8 @@ mod test_weekly {
 
 #[cfg(test)]
 mod test_monthly {
-    use chrono::{Month, Weekday};
-    use crate::frequencies::{Frequency, MonthlyDate, NthWeekday};
+    use chrono::{Weekday};
+    use crate::frequencies::{Frequency, NthWeekday};
 
     #[test]
     fn validate_monthly() {

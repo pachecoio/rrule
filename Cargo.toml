@@ -9,6 +9,7 @@ authors = ["Thiago Pacheco"]
 repository = "https://github.com/pachecoio/rrules"
 keywords = ["recurrence", "rrule", "recurrence-rule"]
 categories = ["parsing"]
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

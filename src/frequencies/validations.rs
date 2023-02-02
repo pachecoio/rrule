@@ -1,7 +1,7 @@
-use std::collections::HashSet;
-use chrono::Weekday;
 use crate::frequencies::errors::FrequencyErrors;
 use crate::frequencies::{MonthlyDate, NthWeekday, Time};
+use chrono::Weekday;
+use std::collections::HashSet;
 
 pub fn validate_secondly(interval: &i32) -> Result<(), FrequencyErrors> {
     if *interval > 0 {
@@ -71,7 +71,11 @@ pub fn validate_weekly(interval: &i32, by_day: &[Weekday]) -> Result<(), Frequen
     Ok(())
 }
 
-pub fn validate_monthly(interval: &i32, by_month_day: &[i32], nth_weekdays: &[NthWeekday]) -> Result<(), FrequencyErrors> {
+pub fn validate_monthly(
+    interval: &i32,
+    by_month_day: &[i32],
+    nth_weekdays: &[NthWeekday],
+) -> Result<(), FrequencyErrors> {
     if *interval <= 0 {
         return Err(FrequencyErrors::InvalidInterval {
             message: "Interval must be greater than 0".to_string(),
@@ -102,6 +106,9 @@ pub fn validate_monthly(interval: &i32, by_month_day: &[i32], nth_weekdays: &[Nt
     Ok(())
 }
 
-pub fn validate_yearly(_interval: &i32, _by_monthly_date: &[MonthlyDate]) -> Result<(), FrequencyErrors> {
+pub fn validate_yearly(
+    _interval: &i32,
+    _by_monthly_date: &[MonthlyDate],
+) -> Result<(), FrequencyErrors> {
     Ok(())
 }

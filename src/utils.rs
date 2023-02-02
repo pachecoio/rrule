@@ -1,14 +1,21 @@
-
-use std::ops::{Add, Sub};
-use chrono::{Datelike, DateTime, Duration, Utc, Weekday};
 use crate::frequencies::NthWeekday;
+use chrono::{DateTime, Datelike, Duration, Utc, Weekday};
+use std::ops::{Add, Sub};
 
 pub trait DateUtils {
-    fn with_weekday(self, weekday: Weekday) -> Option<Self> where Self: Sized;
+    fn with_weekday(self, weekday: Weekday) -> Option<Self>
+    where
+        Self: Sized;
     fn shift_days(&self, days: i64) -> Option<DateTime<Utc>>;
-    fn shift_weeks(self, days: i64) -> Option<Self> where Self: Sized;
-    fn shift_months(self, months: i64) -> Option<Self> where Self: Sized;
-    fn shift_years(self, years: i64) -> Option<Self> where Self: Sized;
+    fn shift_weeks(self, days: i64) -> Option<Self>
+    where
+        Self: Sized;
+    fn shift_months(self, months: i64) -> Option<Self>
+    where
+        Self: Sized;
+    fn shift_years(self, years: i64) -> Option<Self>
+    where
+        Self: Sized;
 }
 
 impl DateUtils for DateTime<Utc> {
@@ -49,12 +56,12 @@ impl DateUtils for DateTime<Utc> {
         diff = match diff {
             0 => 12,
             1.. => diff % 12,
-            _ => 12 + (diff % 12) - 1
+            _ => 12 + (diff % 12) - 1,
         };
 
         match self.with_month(diff as u32) {
             None => None,
-            Some(d) => d.shift_years(years as i64)
+            Some(d) => d.shift_years(years as i64),
         }
     }
     fn shift_years(self, years: i64) -> Option<Self> {
@@ -103,12 +110,14 @@ pub fn get_next_weekday(date: &DateTime<Utc>, weekdays: &Vec<Weekday>) -> Option
     }
     // Get first supported weekday of next week
     let d = date.shift_weeks(1).unwrap();
-    Some(
-        d.with_weekday(weekdays[0]).unwrap()
-    )
+    Some(d.with_weekday(weekdays[0]).unwrap())
 }
 
-pub fn get_next_nth_weekday(current_date: &DateTime<Utc>, interval: i64, nth_weekdays: &Vec<NthWeekday>) -> Option<DateTime<Utc>> {
+pub fn get_next_nth_weekday(
+    current_date: &DateTime<Utc>,
+    interval: i64,
+    nth_weekdays: &Vec<NthWeekday>,
+) -> Option<DateTime<Utc>> {
     if nth_weekdays.is_empty() {
         return None;
     }
@@ -119,14 +128,20 @@ pub fn get_next_nth_weekday(current_date: &DateTime<Utc>, interval: i64, nth_wee
     let week_number = weekday_ordinal(current_date);
 
     for nth_weekday in &ordered_weekdays {
-        if nth_weekday.week_number == week_number && nth_weekday.weekday.num_days_from_sunday() > weekday.num_days_from_sunday() {
-            return Some(current_date.add(
-                Duration::days((nth_weekday.weekday.num_days_from_sunday() - weekday.num_days_from_sunday()) as i64)
-            ))
+        if nth_weekday.week_number == week_number
+            && nth_weekday.weekday.num_days_from_sunday() > weekday.num_days_from_sunday()
+        {
+            return Some(current_date.add(Duration::days(
+                (nth_weekday.weekday.num_days_from_sunday() - weekday.num_days_from_sunday())
+                    as i64,
+            )));
         } else if nth_weekday.week_number > week_number {
-            let days_diff = nth_weekday.weekday.num_days_from_sunday() as i64 - weekday.num_days_from_sunday() as i64;
+            let days_diff = nth_weekday.weekday.num_days_from_sunday() as i64
+                - weekday.num_days_from_sunday() as i64;
             let weeks_diff = nth_weekday.week_number - week_number;
-            return current_date.shift_days(days_diff)?.shift_weeks(weeks_diff as i64)
+            return current_date
+                .shift_days(days_diff)?
+                .shift_weeks(weeks_diff as i64);
         }
     }
     // Return first supported nth weekday of next month
@@ -153,8 +168,8 @@ fn order_nth_weekdays(nth_weekdays: &[NthWeekday]) -> Vec<NthWeekday> {
 
 #[cfg(test)]
 mod shift_days {
-    use std::str::FromStr;
     use super::*;
+    use std::str::FromStr;
 
     #[test]
     fn test_shift_days() {
@@ -173,8 +188,8 @@ mod shift_days {
 
 #[cfg(test)]
 mod test_shift_weeks {
-    use std::str::FromStr;
     use super::*;
+    use std::str::FromStr;
 
     #[test]
     fn test_shift_weeks() {
@@ -200,8 +215,8 @@ mod test_shift_weeks {
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
     use super::*;
+    use std::str::FromStr;
 
     #[test]
     fn test_with_weekday() {
@@ -274,7 +289,10 @@ mod tests {
         let weekdays = vec![Weekday::Mon, Weekday::Tue];
 
         let next_weekday = get_next_weekday(&date, &weekdays).unwrap();
-        assert_eq!(next_weekday, DateTime::<Utc>::from_str("2023-01-10T00:00:00Z").unwrap());
+        assert_eq!(
+            next_weekday,
+            DateTime::<Utc>::from_str("2023-01-10T00:00:00Z").unwrap()
+        );
     }
 
     #[test]
@@ -283,10 +301,16 @@ mod tests {
         let weekdays = vec![Weekday::Mon, Weekday::Tue];
 
         let next_weekday = get_next_weekday(&date, &weekdays).unwrap();
-        assert_eq!(next_weekday, DateTime::<Utc>::from_str("2023-01-09T00:00:00Z").unwrap());
+        assert_eq!(
+            next_weekday,
+            DateTime::<Utc>::from_str("2023-01-09T00:00:00Z").unwrap()
+        );
 
         let next_weekday = get_next_weekday(&next_weekday, &weekdays).unwrap();
-        assert_eq!(next_weekday, DateTime::<Utc>::from_str("2023-01-10T00:00:00Z").unwrap());
+        assert_eq!(
+            next_weekday,
+            DateTime::<Utc>::from_str("2023-01-10T00:00:00Z").unwrap()
+        );
     }
 
     #[test]
@@ -295,14 +319,17 @@ mod tests {
         let weekdays = vec![Weekday::Mon, Weekday::Tue];
 
         let next_weekday = get_next_weekday(&date, &weekdays).unwrap();
-        assert_eq!(next_weekday, DateTime::<Utc>::from_str("2023-02-06T00:00:00Z").unwrap());
+        assert_eq!(
+            next_weekday,
+            DateTime::<Utc>::from_str("2023-02-06T00:00:00Z").unwrap()
+        );
     }
 }
 
 #[cfg(test)]
 mod test_shift_years {
-    use std::str::FromStr;
     use super::*;
+    use std::str::FromStr;
 
     #[test]
     fn test_shift_years() {
@@ -321,8 +348,8 @@ mod test_shift_years {
 
 #[cfg(test)]
 mod test_nth_weekdays {
-    use std::str::FromStr;
     use super::*;
+    use std::str::FromStr;
 
     #[test]
     fn test_order_nth_weekdays() {
@@ -352,12 +379,11 @@ mod test_nth_weekdays {
     #[test]
     fn test_get_next_nth_weekday_base_case() {
         let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
-        let result = get_next_nth_weekday(
-            &date,
-            1,
-            &vec![NthWeekday::new(Weekday::Mon, 1)]
+        let result = get_next_nth_weekday(&date, 1, &vec![NthWeekday::new(Weekday::Mon, 1)]);
+        assert_eq!(
+            result.unwrap(),
+            DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap()
         );
-        assert_eq!(result.unwrap(), DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap());
     }
 
     #[test]
@@ -369,9 +395,12 @@ mod test_nth_weekdays {
             &vec![
                 NthWeekday::new(Weekday::Mon, 3),
                 NthWeekday::new(Weekday::Tue, 2),
-            ]
+            ],
         );
-        assert_eq!(result.unwrap(), DateTime::<Utc>::from_str("2023-01-10T00:00:00Z").unwrap());
+        assert_eq!(
+            result.unwrap(),
+            DateTime::<Utc>::from_str("2023-01-10T00:00:00Z").unwrap()
+        );
 
         let result = get_next_nth_weekday(
             &result.unwrap(),
@@ -379,47 +408,41 @@ mod test_nth_weekdays {
             &vec![
                 NthWeekday::new(Weekday::Tue, 2),
                 NthWeekday::new(Weekday::Mon, 3),
-            ]
+            ],
         );
-        assert_eq!(result.unwrap(), DateTime::<Utc>::from_str("2023-01-16T00:00:00Z").unwrap());
+        assert_eq!(
+            result.unwrap(),
+            DateTime::<Utc>::from_str("2023-01-16T00:00:00Z").unwrap()
+        );
     }
 
     #[test]
     fn test_get_next_nth_weekday_when_first_day_of_next_month() {
         let date = DateTime::<Utc>::from_str("2022-12-31T00:00:00Z").unwrap();
-        let result = get_next_nth_weekday(
-            &date,
-            1,
-            &vec![
-                NthWeekday::new(Weekday::Mon, 1),
-            ]
+        let result = get_next_nth_weekday(&date, 1, &vec![NthWeekday::new(Weekday::Mon, 1)]);
+        assert_eq!(
+            result.unwrap(),
+            DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap()
         );
-        assert_eq!(result.unwrap(), DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap());
     }
 
     #[test]
     fn test_get_next_nth_weekday_when_first_day_of_the_year() {
         let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
-        let result = get_next_nth_weekday(
-            &date,
-            1,
-            &vec![
-                NthWeekday::new(Weekday::Wed, 1),
-            ]
+        let result = get_next_nth_weekday(&date, 1, &vec![NthWeekday::new(Weekday::Wed, 1)]);
+        assert_eq!(
+            result.unwrap(),
+            DateTime::<Utc>::from_str("2023-01-04T00:00:00Z").unwrap()
         );
-        assert_eq!(result.unwrap(), DateTime::<Utc>::from_str("2023-01-04T00:00:00Z").unwrap());
     }
 
     #[test]
     fn test_get_next_nth_weekday_when_last_day_of_the_month() {
         let date = DateTime::<Utc>::from_str("2023-01-31T00:00:00Z").unwrap();
-        let result = get_next_nth_weekday(
-            &date,
-            1,
-            &vec![
-                NthWeekday::new(Weekday::Wed, 1),
-            ]
+        let result = get_next_nth_weekday(&date, 1, &vec![NthWeekday::new(Weekday::Wed, 1)]);
+        assert_eq!(
+            result.unwrap(),
+            DateTime::<Utc>::from_str("2023-02-01T00:00:00Z").unwrap()
         );
-        assert_eq!(result.unwrap(), DateTime::<Utc>::from_str("2023-02-01T00:00:00Z").unwrap());
     }
 }

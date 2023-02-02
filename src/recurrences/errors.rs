@@ -10,4 +10,3 @@ impl Display for RecurrenceInvalid {
         write!(f, "{}", self.message)
     }
 }
-

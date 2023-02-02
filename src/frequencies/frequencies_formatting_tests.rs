@@ -1,21 +1,16 @@
-
 #[cfg(test)]
 mod secondly_formatting {
     use crate::Frequency;
 
     #[test]
     fn test_secondly_to_string() {
-        let frequency = Frequency::Secondly {
-            interval: 1,
-        };
+        let frequency = Frequency::Secondly { interval: 1 };
         assert_eq!(frequency.to_string(), "Every second");
     }
 
     #[test]
     fn test_secondly_to_string_plural() {
-        let frequency = Frequency::Secondly {
-            interval: 30,
-        };
+        let frequency = Frequency::Secondly { interval: 30 };
         assert_eq!(frequency.to_string(), "Every 30 seconds");
     }
 }
@@ -26,17 +21,13 @@ mod minutely_formatting {
 
     #[test]
     fn test_minutely_to_string() {
-        let frequency = Frequency::Minutely {
-            interval: 1,
-        };
+        let frequency = Frequency::Minutely { interval: 1 };
         assert_eq!(frequency.to_string(), "Every minute");
     }
 
     #[test]
     fn test_minutely_to_string_plural() {
-        let frequency = Frequency::Minutely {
-            interval: 30,
-        };
+        let frequency = Frequency::Minutely { interval: 30 };
         assert_eq!(frequency.to_string(), "Every 30 minutes");
     }
 }
@@ -47,17 +38,13 @@ mod hourly_formatting {
 
     #[test]
     fn test_hourly_to_string() {
-        let frequency = Frequency::Hourly {
-            interval: 1,
-        };
+        let frequency = Frequency::Hourly { interval: 1 };
         assert_eq!(frequency.to_string(), "Every hour");
     }
 
     #[test]
     fn test_hourly_to_string_plural() {
-        let frequency = Frequency::Hourly {
-            interval: 30,
-        };
+        let frequency = Frequency::Hourly { interval: 30 };
         assert_eq!(frequency.to_string(), "Every 30 hours");
     }
 }
@@ -99,13 +86,12 @@ mod daily_formatting {
         };
         assert_eq!(frequency.to_string(), "3 times a day");
     }
-
 }
 
 #[cfg(test)]
 mod weekly_formatting {
-    use chrono::Weekday;
     use crate::Frequency;
+    use chrono::Weekday;
 
     #[test]
     fn test_weekly_to_string() {
@@ -129,10 +115,7 @@ mod weekly_formatting {
     fn test_weekly_to_string_with_days() {
         let frequency = Frequency::Weekly {
             interval: 1,
-            by_day: vec![
-                Weekday::Mon,
-                Weekday::Tue,
-            ]
+            by_day: vec![Weekday::Mon, Weekday::Tue],
         };
         assert_eq!(frequency.to_string(), "Twice a week");
     }
@@ -141,10 +124,7 @@ mod weekly_formatting {
     fn test_weekly_to_string_with_days_plural() {
         let frequency = Frequency::Weekly {
             interval: 2,
-            by_day: vec![
-                Weekday::Mon,
-                Weekday::Tue,
-            ]
+            by_day: vec![Weekday::Mon, Weekday::Tue],
         };
         assert_eq!(frequency.to_string(), "Twice every 2 weeks");
     }
@@ -153,11 +133,7 @@ mod weekly_formatting {
     fn test_weekly_to_string_more_than_two_times() {
         let frequency = Frequency::Weekly {
             interval: 1,
-            by_day: vec![
-                Weekday::Mon,
-                Weekday::Tue,
-                Weekday::Wed,
-            ]
+            by_day: vec![Weekday::Mon, Weekday::Tue, Weekday::Wed],
         };
         assert_eq!(frequency.to_string(), "3 times a week");
     }
@@ -165,8 +141,8 @@ mod weekly_formatting {
 
 #[cfg(test)]
 mod monthly_formatting {
-    use chrono::Weekday;
     use crate::{Frequency, NthWeekday};
+    use chrono::Weekday;
 
     #[test]
     fn test_monthly_to_string() {
@@ -221,8 +197,8 @@ mod monthly_formatting {
                 NthWeekday {
                     week_number: 1,
                     weekday: Weekday::Tue,
-                }
-            ]
+                },
+            ],
         };
         assert_eq!(frequency.to_string(), "Twice a month");
     }
@@ -240,8 +216,8 @@ mod monthly_formatting {
                 NthWeekday {
                     week_number: 1,
                     weekday: Weekday::Tue,
-                }
-            ]
+                },
+            ],
         };
         assert_eq!(frequency.to_string(), "Twice every 2 months");
     }
@@ -263,8 +239,8 @@ mod monthly_formatting {
                 NthWeekday {
                     week_number: 1,
                     weekday: Weekday::Wed,
-                }
-            ]
+                },
+            ],
         };
         assert_eq!(frequency.to_string(), "3 times every 2 months");
     }
@@ -272,8 +248,8 @@ mod monthly_formatting {
 
 #[cfg(test)]
 mod yearly_formatting {
-    use chrono::Month;
     use crate::{Frequency, MonthlyDate};
+    use chrono::Month;
 
     #[test]
     fn test_yearly_to_string() {
@@ -305,7 +281,7 @@ mod yearly_formatting {
                 MonthlyDate {
                     month: Month::January,
                     day: 2,
-                }
+                },
             ],
         };
         assert_eq!(frequency.to_string(), "Twice a year");
@@ -323,7 +299,7 @@ mod yearly_formatting {
                 MonthlyDate {
                     month: Month::January,
                     day: 2,
-                }
+                },
             ],
         };
         assert_eq!(frequency.to_string(), "Twice every 2 years");
@@ -345,7 +321,7 @@ mod yearly_formatting {
                 MonthlyDate {
                     month: Month::January,
                     day: 3,
-                }
+                },
             ],
         };
         assert_eq!(frequency.to_string(), "3 times every 2 years");

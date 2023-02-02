@@ -1,15 +1,7 @@
-mod utils;
 mod frequencies;
 mod recurrences;
+mod utils;
 
-pub use frequencies::{
-    Frequency,
-    Time,
-    NthWeekday,
-    MonthlyDate
-};
+pub use frequencies::{Frequency, MonthlyDate, NthWeekday, Time};
 
-pub use recurrences::{
-    Recurrence,
-    RecurrenceInvalid
-};
+pub use recurrences::{Recurrence, RecurrenceInvalid};

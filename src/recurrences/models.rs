@@ -1,10 +1,8 @@
-
-use std::str::FromStr;
-use chrono::{DateTime, Duration, Utc};
-use crate::frequencies::{Frequency};
+use crate::frequencies::Frequency;
 use crate::recurrences::errors::RecurrenceInvalid;
 use crate::recurrences::validations::{validate_duration, validate_recurrence_period};
-
+use chrono::{DateTime, Duration, Utc};
+use std::str::FromStr;
 
 const MAX_DATE: &str = "9999-12-31T23:59:59Z";
 
@@ -50,7 +48,7 @@ pub struct Recurrence {
 
     /// End date of the recurrences
     pub end: DateTime<Utc>,
-    duration: Duration
+    duration: Duration,
 }
 
 impl Recurrence {
@@ -68,10 +66,17 @@ impl Recurrence {
     /// let recurrence = Recurrence::new(valid_frequency, chrono::Utc::now(), None, None);
     /// assert!(recurrence.is_ok());
     /// ```
-    pub fn new(frequency: Frequency, start: DateTime<Utc>, end: Option<DateTime<Utc>>, duration: Option<Duration>) -> Result<Self, RecurrenceInvalid> {
+    pub fn new(
+        frequency: Frequency,
+        start: DateTime<Utc>,
+        end: Option<DateTime<Utc>>,
+        duration: Option<Duration>,
+    ) -> Result<Self, RecurrenceInvalid> {
         let end = end.unwrap_or_else(|| DateTime::<Utc>::from_str(MAX_DATE).unwrap());
         if frequency.is_valid().is_err() {
-            return Err(RecurrenceInvalid { message: format!("{}", frequency.is_valid().unwrap_err().to_string()) });
+            return Err(RecurrenceInvalid {
+                message: format!("{}", frequency.is_valid().unwrap_err().to_string()),
+            });
         }
         validate_recurrence_period(&start, &end)?;
 
@@ -82,7 +87,7 @@ impl Recurrence {
             start,
             current_date: None,
             end,
-            duration
+            duration,
         })
     }
 }
@@ -117,7 +122,7 @@ impl Iterator for Recurrence {
                     return Some(self.start);
                 }
                 self.start
-            },
+            }
             Some(current_date) => current_date,
         };
         // Get the next event date based on the current date and frequencies
@@ -129,7 +134,7 @@ impl Iterator for Recurrence {
                 self.current_date = Some(next_event);
                 Some(next_event)
             }
-            None => None
+            None => None,
         }
     }
 }

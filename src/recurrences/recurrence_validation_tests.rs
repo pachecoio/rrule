@@ -1,44 +1,30 @@
-
-
-
-
-
 #[cfg(test)]
 mod secondly_validations {
-    use std::str::FromStr;
-    use chrono::{DateTime, Duration, Utc};
     use crate::frequencies::Frequency;
     use crate::recurrences::Recurrence;
-    
+    use chrono::{DateTime, Duration, Utc};
+    use std::str::FromStr;
 
     #[test]
     fn every_second() {
-        let freq = Frequency::Secondly {
-            interval: 1,
-        };
+        let freq = Frequency::Secondly { interval: 1 };
         let recurrence = Recurrence::new(
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::seconds(1)
-            )
+            Some(Duration::seconds(1)),
         );
         assert!(recurrence.is_ok());
     }
 
     #[test]
     fn every_second_with_invalid_duration() {
-        let freq = Frequency::Secondly {
-            interval: 1,
-        };
+        let freq = Frequency::Secondly { interval: 1 };
         let recurrence = Recurrence::new(
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::seconds(2)
-            )
+            Some(Duration::seconds(2)),
         );
         assert!(recurrence.is_err());
     }
@@ -46,40 +32,31 @@ mod secondly_validations {
 
 #[cfg(test)]
 mod minutely_validations {
-    use std::str::FromStr;
-    use chrono::{DateTime, Duration, Utc};
     use crate::frequencies::Frequency;
     use crate::recurrences::Recurrence;
-    
+    use chrono::{DateTime, Duration, Utc};
+    use std::str::FromStr;
 
     #[test]
     fn every_minute() {
-        let freq = Frequency::Minutely {
-            interval: 1,
-        };
+        let freq = Frequency::Minutely { interval: 1 };
         let recurrence = Recurrence::new(
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::minutes(1)
-            )
+            Some(Duration::minutes(1)),
         );
         assert!(recurrence.is_ok());
     }
 
     #[test]
     fn every_minute_with_invalid_duration() {
-        let freq = Frequency::Minutely {
-            interval: 1,
-        };
+        let freq = Frequency::Minutely { interval: 1 };
         let recurrence = Recurrence::new(
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::minutes(2)
-            )
+            Some(Duration::minutes(2)),
         );
         assert!(recurrence.is_err());
     }
@@ -87,40 +64,31 @@ mod minutely_validations {
 
 #[cfg(test)]
 mod hourly_validations {
-    use std::str::FromStr;
-    use chrono::{DateTime, Duration, Utc};
     use crate::frequencies::Frequency;
     use crate::recurrences::Recurrence;
-    
+    use chrono::{DateTime, Duration, Utc};
+    use std::str::FromStr;
 
     #[test]
     fn every_hour() {
-        let freq = Frequency::Hourly {
-            interval: 1,
-        };
+        let freq = Frequency::Hourly { interval: 1 };
         let recurrence = Recurrence::new(
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::hours(1)
-            )
+            Some(Duration::hours(1)),
         );
         assert!(recurrence.is_ok());
     }
 
     #[test]
     fn every_hour_with_invalid_duration() {
-        let freq = Frequency::Hourly {
-            interval: 1,
-        };
+        let freq = Frequency::Hourly { interval: 1 };
         let recurrence = Recurrence::new(
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::hours(2)
-            )
+            Some(Duration::hours(2)),
         );
         assert!(recurrence.is_err());
     }
@@ -128,10 +96,10 @@ mod hourly_validations {
 
 #[cfg(test)]
 mod daily_validations {
-    use std::str::FromStr;
-    use chrono::{DateTime, Duration, Utc};
     use crate::frequencies::{Frequency, Time};
     use crate::recurrences::Recurrence;
+    use chrono::{DateTime, Duration, Utc};
+    use std::str::FromStr;
 
     #[test]
     fn invalid_interval() {
@@ -143,7 +111,7 @@ mod daily_validations {
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            None
+            None,
         );
         assert!(recurrence.is_err());
     }
@@ -158,9 +126,7 @@ mod daily_validations {
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::days(1)
-            )
+            Some(Duration::days(1)),
         );
         assert!(recurrence.is_ok());
     }
@@ -175,9 +141,7 @@ mod daily_validations {
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::days(2)
-            )
+            Some(Duration::days(2)),
         );
         assert!(recurrence.is_err());
     }
@@ -188,16 +152,14 @@ mod daily_validations {
             interval: 1,
             by_time: vec![
                 Time::from_str("12:00:00").unwrap(),
-                Time::from_str("14:00:00").unwrap()
+                Time::from_str("14:00:00").unwrap(),
             ],
         };
         let recurrence = Recurrence::new(
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::hours(6)
-            )
+            Some(Duration::hours(6)),
         );
         assert!(recurrence.is_err());
     }
@@ -208,16 +170,14 @@ mod daily_validations {
             interval: 1,
             by_time: vec![
                 Time::from_str("02:00:00").unwrap(),
-                Time::from_str("22:00:00").unwrap()
+                Time::from_str("22:00:00").unwrap(),
             ],
         };
         let recurrence = Recurrence::new(
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::hours(6)
-            )
+            Some(Duration::hours(6)),
         );
         assert!(recurrence.is_err());
     }
@@ -225,10 +185,10 @@ mod daily_validations {
 
 #[cfg(test)]
 mod weekly_validations {
-    use std::str::FromStr;
-    use chrono::{DateTime, Duration, Utc, Weekday};
     use crate::frequencies::Frequency;
     use crate::recurrences::Recurrence;
+    use chrono::{DateTime, Duration, Utc, Weekday};
+    use std::str::FromStr;
 
     #[test]
     fn every_week() {
@@ -240,9 +200,7 @@ mod weekly_validations {
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::weeks(1)
-            )
+            Some(Duration::weeks(1)),
         );
         assert!(recurrence.is_ok());
     }
@@ -257,9 +215,7 @@ mod weekly_validations {
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::weeks(2)
-            )
+            Some(Duration::weeks(2)),
         );
         assert!(recurrence.is_err());
     }
@@ -268,19 +224,13 @@ mod weekly_validations {
     fn every_week_by_day_with_invalid_duration() {
         let freq = Frequency::Weekly {
             interval: 1,
-            by_day: vec![
-                Weekday::Mon,
-                Weekday::Wed,
-                Weekday::Fri
-            ],
+            by_day: vec![Weekday::Mon, Weekday::Wed, Weekday::Fri],
         };
         let recurrence = Recurrence::new(
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::days(3)
-            )
+            Some(Duration::days(3)),
         );
         assert!(recurrence.is_err());
     }
@@ -288,10 +238,10 @@ mod weekly_validations {
 
 #[cfg(test)]
 mod monthly_validations {
-    use std::str::FromStr;
-    use chrono::{DateTime, Duration, Utc, Weekday};
     use crate::frequencies::{Frequency, NthWeekday};
     use crate::recurrences::Recurrence;
+    use chrono::{DateTime, Duration, Utc, Weekday};
+    use std::str::FromStr;
 
     #[test]
     fn every_month() {
@@ -304,9 +254,7 @@ mod monthly_validations {
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::days(30)
-            )
+            Some(Duration::days(30)),
         );
         assert!(recurrence.is_ok());
     }
@@ -318,16 +266,14 @@ mod monthly_validations {
             by_month_day: vec![],
             nth_weekdays: vec![
                 NthWeekday::new(Weekday::Wed, 1),
-                NthWeekday::new(Weekday::Fri, 1)
+                NthWeekday::new(Weekday::Fri, 1),
             ],
         };
         let recurrence = Recurrence::new(
             every_mon_and_fri,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::hours(1)
-            )
+            Some(Duration::hours(1)),
         );
         assert!(recurrence.is_ok());
     }
@@ -343,9 +289,7 @@ mod monthly_validations {
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::days(31)
-            )
+            Some(Duration::days(31)),
         );
         assert!(recurrence.is_err());
     }
@@ -361,9 +305,7 @@ mod monthly_validations {
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::days(15)
-            )
+            Some(Duration::days(15)),
         );
         assert!(recurrence.is_err());
     }
@@ -376,16 +318,14 @@ mod monthly_validations {
             nth_weekdays: vec![
                 NthWeekday::new(Weekday::Mon, 1),
                 NthWeekday::new(Weekday::Wed, 1),
-                NthWeekday::new(Weekday::Fri, 1)
+                NthWeekday::new(Weekday::Fri, 1),
             ],
         };
         let recurrence = Recurrence::new(
             freq,
             DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
             None,
-            Some(
-                Duration::days(15)
-            )
+            Some(Duration::days(15)),
         );
         assert!(recurrence.is_err());
     }

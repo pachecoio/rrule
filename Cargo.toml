@@ -7,7 +7,7 @@ license = "MIT"
 license-file = "LICENSE"
 authors = ["Thiago Pacheco"]
 repository = "https://github.com/pachecoio/rrule"
-keywords = ["recurrence", "rrule", "recurrence-rule", "recurrence-rule-parser"]
+keywords = ["recurrence", "rrule", "recurrence-rule"]
 categories = ["parsing"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

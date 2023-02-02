@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2021"
 description = "A library for working with recurrence rules"
 license = "MIT"
+license-file = "LICENSE"
+authors = ["Thiago Pacheco"]
+repository = "https://github.com/pachecoio/rrule"
+keywords = ["recurrence", "rrule", "recurrence-rule", "recurrence-rule-parser"]
+categories = ["parsing"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

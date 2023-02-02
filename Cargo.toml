@@ -1,12 +1,12 @@
 [package]
-name = "rrule"
+name = "rrules"
 version = "0.1.0"
 edition = "2021"
 description = "A library for working with recurrence rules"
 license = "MIT"
 license-file = "LICENSE"
 authors = ["Thiago Pacheco"]
-repository = "https://github.com/pachecoio/rrule"
+repository = "https://github.com/pachecoio/rrules"
 keywords = ["recurrence", "rrule", "recurrence-rule"]
 categories = ["parsing"]
 

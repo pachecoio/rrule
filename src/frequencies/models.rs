@@ -16,7 +16,7 @@ use std::str::FromStr;
 ///
 /// Examples:
 /// ```
-/// use rrule::{Frequency};
+/// use rrules::{Frequency};
 ///
 /// let once_a_day = Frequency::Daily {interval: 1, by_time: vec![]};
 /// assert_eq!(once_a_day.to_string(), "Once a day");
@@ -196,7 +196,7 @@ impl Frequency {
     ///
     /// ```
     /// use std::str::FromStr;
-    /// use rrule::Frequency;
+    /// use rrules::Frequency;
     /// use chrono::{Utc, DateTime, Duration, Weekday};
     ///
     /// let once_a_day = Frequency::Daily {interval: 1,by_time: vec![]};

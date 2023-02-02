@@ -14,7 +14,7 @@ const MAX_DATE: &str = "9999-12-31T23:59:59Z";
 /// ```
 /// use std::str::FromStr;
 /// use chrono::{DateTime, Utc};
-/// use rrule::{Recurrence, Frequency};
+/// use rrules::{Recurrence, Frequency};
 ///
 /// let once_a_day = Frequency::Daily {interval: 1, by_time: vec![]};
 /// let start_date = DateTime::<Utc>::from_str("2023-01-01T12:00:00Z").unwrap();
@@ -56,7 +56,7 @@ impl Recurrence {
     /// Returns an error if the recurrence rules are invalid.
     /// Examples:
     /// ```
-    /// use rrule::{Recurrence, Frequency};
+    /// use rrules::{Recurrence, Frequency};
     ///
     /// let invalid_frequency = Frequency::Daily {interval: 0, by_time: vec![]};
     /// let recurrence = Recurrence::new(invalid_frequency, chrono::Utc::now(), None, None);
@@ -100,7 +100,7 @@ impl Iterator for Recurrence {
     /// Examples:
     /// ```
     /// use chrono::DateTime;
-    /// use rrule::{Recurrence, Frequency};
+    /// use rrules::{Recurrence, Frequency};
     ///
     /// let once_a_day = Frequency::Daily {interval: 1, by_time: vec![]};
     /// let start_date = chrono::Utc::now();

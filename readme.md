@@ -66,7 +66,7 @@ Current supporting recurrence rules:
 Represents the rules for a recurrence that happens every x seconds.
 
 ```rust
-use rrule::Frequency;
+use rrules::Frequency;
 
 let every_second = Frequency::Secondly {
     interval: 1,
@@ -82,7 +82,7 @@ let every_5_seconds = Frequency::Secondly {
 Represents the rules for a recurrence that happens every x minutes.
 
 ```rust
-use rrule::Frequency;
+use rrules::Frequency;
 
 let every_minute = Frequency::Minutely {
     interval: 1,
@@ -98,7 +98,7 @@ let every_5_minutes = Frequency::Minutely {
 Represents the rules for a recurrence that happens every x hours.
 
 ```rust
-use rrule::Frequency;
+use rrules::Frequency;
 
 let every_hour = Frequency::Hourly {
     interval: 1,
@@ -115,7 +115,7 @@ Represents the rules for a recurrence that happens x times every x days.
 
 ```rust
 use chrono::{DateTime, Duration, Utc};
-use rrule::{Frequency, Time};
+use rrules::{Frequency, Time};
 
 let daily = Frequency::Daily {
     interval: 1,

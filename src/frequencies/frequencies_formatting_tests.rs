@@ -51,6 +51,7 @@ mod hourly_formatting {
 
 #[cfg(test)]
 mod daily_formatting {
+    use std::str::FromStr;
     use crate::{Frequency, Time};
 
     #[test]

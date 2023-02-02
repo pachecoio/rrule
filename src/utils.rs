@@ -98,21 +98,6 @@ pub fn weekday_ordinal(date: &DateTime<Utc>) -> i32 {
     week_number
 }
 
-pub fn get_next_weekday(date: &DateTime<Utc>, weekdays: &Vec<Weekday>) -> Option<DateTime<Utc>> {
-    if weekdays.is_empty() {
-        return None;
-    }
-    let current_weekday_number = date.weekday();
-    for weekday in weekdays {
-        if current_weekday_number.num_days_from_sunday() < weekday.num_days_from_sunday() {
-            return Some(date.with_weekday(*weekday).unwrap());
-        }
-    }
-    // Get first supported weekday of next week
-    let d = date.shift_weeks(1).unwrap();
-    Some(d.with_weekday(weekdays[0]).unwrap())
-}
-
 pub fn get_next_nth_weekday(
     current_date: &DateTime<Utc>,
     interval: i64,
@@ -281,48 +266,6 @@ mod tests {
         let date = DateTime::<Utc>::from_str("2023-02-28T00:00:00Z").unwrap();
         let num = weekday_ordinal(&date);
         assert_eq!(num, 4);
-    }
-
-    #[test]
-    fn test_get_next_weekday() {
-        let date = DateTime::<Utc>::from_str("2023-01-09T00:00:00Z").unwrap();
-        let weekdays = vec![Weekday::Mon, Weekday::Tue];
-
-        let next_weekday = get_next_weekday(&date, &weekdays).unwrap();
-        assert_eq!(
-            next_weekday,
-            DateTime::<Utc>::from_str("2023-01-10T00:00:00Z").unwrap()
-        );
-    }
-
-    #[test]
-    fn test_get_next_weekday_next_week() {
-        let date = DateTime::<Utc>::from_str("2023-01-03T00:00:00Z").unwrap();
-        let weekdays = vec![Weekday::Mon, Weekday::Tue];
-
-        let next_weekday = get_next_weekday(&date, &weekdays).unwrap();
-        assert_eq!(
-            next_weekday,
-            DateTime::<Utc>::from_str("2023-01-09T00:00:00Z").unwrap()
-        );
-
-        let next_weekday = get_next_weekday(&next_weekday, &weekdays).unwrap();
-        assert_eq!(
-            next_weekday,
-            DateTime::<Utc>::from_str("2023-01-10T00:00:00Z").unwrap()
-        );
-    }
-
-    #[test]
-    fn test_get_next_weekday_next_month() {
-        let date = DateTime::<Utc>::from_str("2023-01-31T00:00:00Z").unwrap();
-        let weekdays = vec![Weekday::Mon, Weekday::Tue];
-
-        let next_weekday = get_next_weekday(&date, &weekdays).unwrap();
-        assert_eq!(
-            next_weekday,
-            DateTime::<Utc>::from_str("2023-02-06T00:00:00Z").unwrap()
-        );
     }
 }
 

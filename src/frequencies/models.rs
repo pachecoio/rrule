@@ -1,7 +1,7 @@
 use std::cmp::{max, Ordering};
-use std::fmt::{write, Display, Formatter};
+use std::fmt::{Display, Formatter};
 
-use crate::frequencies::errors::FrequencyErrors;
+use crate::frequencies::errors::InvalidFrequency;
 use crate::frequencies::validations::{
     validate_daily, validate_hourly, validate_minutely, validate_monthly, validate_secondly,
     validate_weekly, validate_yearly,
@@ -9,6 +9,7 @@ use crate::frequencies::validations::{
 use crate::utils::{get_next_nth_weekday, weekday_ordinal, DateUtils};
 use chrono::{DateTime, Datelike, Duration, Month, Timelike, Utc, Weekday};
 use std::ops::{Add, Sub};
+use std::str::FromStr;
 
 /// Representation of the frequency of a recurrence.
 /// E.g. Once a day, Twice a week, etc.
@@ -100,12 +101,14 @@ pub struct Time {
     pub minute: i32,
 }
 
-impl Time {
-    pub fn from_str(time_str: &str) -> Result<Self, FrequencyErrors> {
+impl FromStr for Time {
+    type Err = InvalidFrequency;
+
+    fn from_str(time_str: &str) -> Result<Self, InvalidFrequency> {
         let mut parts = time_str.split(':');
         let hour = match parts.next() {
             None => {
-                return Err(FrequencyErrors::InvalidTime {
+                return Err(InvalidFrequency::Time {
                     message: format!("Invalid time: {time_str}"),
                 })
             }
@@ -113,7 +116,7 @@ impl Time {
         };
         let minute = match parts.next() {
             None => {
-                return Err(FrequencyErrors::InvalidTime {
+                return Err(InvalidFrequency::Time {
                     message: format!("Invalid time: {time_str}"),
                 })
             }
@@ -132,7 +135,7 @@ pub struct MonthlyDate {
 
 impl Frequency {
     /// Verifies if the frequency is valid.
-    pub fn is_valid(&self) -> Result<(), FrequencyErrors> {
+    pub fn is_valid(&self) -> Result<(), InvalidFrequency> {
         match self {
             Frequency::Secondly { interval } => validate_secondly(interval),
             Frequency::Minutely { interval } => validate_minutely(interval),
@@ -469,8 +472,8 @@ fn get_interval_string(interval: i32, unit: &str) -> String {
 
 fn get_amount_format(by_time: usize) -> Option<String> {
     match by_time {
-        0 | 1 => Some(format!("Once")),
-        2 => Some(format!("Twice")),
-        amount => Some(format!("{} times", amount)),
+        0 | 1 => Some("Once".to_string()),
+        2 => Some("Twice".to_string()),
+        amount => Some(format!("{amount} times")),
     }
 }

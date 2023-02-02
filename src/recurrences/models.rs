@@ -48,7 +48,7 @@ pub struct Recurrence {
 
     /// End date of the recurrences
     pub end: DateTime<Utc>,
-    duration: Duration,
+    pub duration: Duration,
 }
 
 impl Recurrence {
@@ -75,7 +75,7 @@ impl Recurrence {
         let end = end.unwrap_or_else(|| DateTime::<Utc>::from_str(MAX_DATE).unwrap());
         if frequency.is_valid().is_err() {
             return Err(RecurrenceInvalid {
-                message: format!("{}", frequency.is_valid().unwrap_err().to_string()),
+                message: format!("{}", frequency.is_valid().unwrap_err()),
             });
         }
         validate_recurrence_period(&start, &end)?;

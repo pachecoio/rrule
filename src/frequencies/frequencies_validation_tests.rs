@@ -1,5 +1,6 @@
 #[cfg(test)]
 mod test_daily {
+    use std::str::FromStr;
     use crate::frequencies::{Frequency, Time};
 
     #[test]

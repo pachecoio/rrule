@@ -1,20 +1,20 @@
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug)]
-pub enum FrequencyErrors {
-    InvalidInterval { message: String },
-    InvalidTime { message: String },
-    InvalidDay { message: String },
+pub enum InvalidFrequency {
+    Interval { message: String },
+    Time { message: String },
+    Day { message: String },
 }
 
-impl Display for FrequencyErrors {
+impl Display for InvalidFrequency {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
-            FrequencyErrors::InvalidInterval { message } => {
+            InvalidFrequency::Interval { message } => {
                 write!(f, "Invalid interval: {message}")
             }
-            FrequencyErrors::InvalidTime { message } => write!(f, "Invalid time: {message}"),
-            FrequencyErrors::InvalidDay { message } => write!(f, "Invalid day: {message}"),
+            InvalidFrequency::Time { message } => write!(f, "Invalid time: {message}"),
+            InvalidFrequency::Day { message } => write!(f, "Invalid day: {message}"),
         }
     }
 }

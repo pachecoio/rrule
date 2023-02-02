@@ -1,41 +1,41 @@
-use crate::frequencies::errors::FrequencyErrors;
+use crate::frequencies::errors::InvalidFrequency;
 use crate::frequencies::{MonthlyDate, NthWeekday, Time};
 use chrono::Weekday;
 use std::collections::HashSet;
 
-pub fn validate_secondly(interval: &i32) -> Result<(), FrequencyErrors> {
+pub fn validate_secondly(interval: &i32) -> Result<(), InvalidFrequency> {
     if *interval > 0 {
         Ok(())
     } else {
-        Err(FrequencyErrors::InvalidInterval {
+        Err(InvalidFrequency::Interval {
             message: "Interval must be greater than 0".to_string(),
         })
     }
 }
 
-pub fn validate_minutely(interval: &i32) -> Result<(), FrequencyErrors> {
+pub fn validate_minutely(interval: &i32) -> Result<(), InvalidFrequency> {
     if *interval > 0 {
         Ok(())
     } else {
-        Err(FrequencyErrors::InvalidInterval {
+        Err(InvalidFrequency::Interval {
             message: "Interval must be greater than 0".to_string(),
         })
     }
 }
 
-pub fn validate_hourly(interval: &i32) -> Result<(), FrequencyErrors> {
+pub fn validate_hourly(interval: &i32) -> Result<(), InvalidFrequency> {
     if *interval > 0 {
         Ok(())
     } else {
-        Err(FrequencyErrors::InvalidInterval {
+        Err(InvalidFrequency::Interval {
             message: "Interval must be greater than 0".to_string(),
         })
     }
 }
 
-pub fn validate_daily(interval: &i32, by_time: &[Time]) -> Result<(), FrequencyErrors> {
+pub fn validate_daily(interval: &i32, by_time: &[Time]) -> Result<(), InvalidFrequency> {
     if *interval <= 0 {
-        return Err(FrequencyErrors::InvalidInterval {
+        return Err(InvalidFrequency::Interval {
             message: "Interval must be greater than 0".to_string(),
         });
     }
@@ -46,7 +46,7 @@ pub fn validate_daily(interval: &i32, by_time: &[Time]) -> Result<(), FrequencyE
             minute: time.minute,
         };
         if !unique_times.insert(t) {
-            return Err(FrequencyErrors::InvalidTime {
+            return Err(InvalidFrequency::Time {
                 message: "Repeated time".to_string(),
             });
         }
@@ -54,16 +54,16 @@ pub fn validate_daily(interval: &i32, by_time: &[Time]) -> Result<(), FrequencyE
     Ok(())
 }
 
-pub fn validate_weekly(interval: &i32, by_day: &[Weekday]) -> Result<(), FrequencyErrors> {
+pub fn validate_weekly(interval: &i32, by_day: &[Weekday]) -> Result<(), InvalidFrequency> {
     if *interval <= 0 {
-        return Err(FrequencyErrors::InvalidInterval {
+        return Err(InvalidFrequency::Interval {
             message: "Interval must be greater than 0".to_string(),
         });
     }
     let mut unique_days: HashSet<Weekday> = HashSet::new();
     for day in by_day {
         if !unique_days.insert(*day) {
-            return Err(FrequencyErrors::InvalidDay {
+            return Err(InvalidFrequency::Day {
                 message: "Repeated day".to_string(),
             });
         }
@@ -75,16 +75,16 @@ pub fn validate_monthly(
     interval: &i32,
     by_month_day: &[i32],
     nth_weekdays: &[NthWeekday],
-) -> Result<(), FrequencyErrors> {
+) -> Result<(), InvalidFrequency> {
     if *interval <= 0 {
-        return Err(FrequencyErrors::InvalidInterval {
+        return Err(InvalidFrequency::Interval {
             message: "Interval must be greater than 0".to_string(),
         });
     }
     let mut unique_month_days: HashSet<i32> = HashSet::new();
     for day in by_month_day {
         if !unique_month_days.insert(*day) {
-            return Err(FrequencyErrors::InvalidDay {
+            return Err(InvalidFrequency::Day {
                 message: "Repeated day".to_string(),
             });
         }
@@ -97,7 +97,7 @@ pub fn validate_monthly(
             weekday: nth_weekday.weekday,
         };
         if !unique_nth_weekdays.insert(nth_weekday) {
-            return Err(FrequencyErrors::InvalidDay {
+            return Err(InvalidFrequency::Day {
                 message: "Repeated day".to_string(),
             });
         }
@@ -109,6 +109,6 @@ pub fn validate_monthly(
 pub fn validate_yearly(
     _interval: &i32,
     _by_monthly_date: &[MonthlyDate],
-) -> Result<(), FrequencyErrors> {
+) -> Result<(), InvalidFrequency> {
     Ok(())
 }

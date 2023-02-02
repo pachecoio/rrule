@@ -229,7 +229,6 @@ mod weekly_validations {
     use chrono::{DateTime, Duration, Utc, Weekday};
     use crate::frequencies::Frequency;
     use crate::recurrences::Recurrence;
-    
 
     #[test]
     fn every_week() {
@@ -293,8 +292,7 @@ mod monthly_validations {
     use chrono::{DateTime, Duration, Utc, Weekday};
     use crate::frequencies::{Frequency, NthWeekday};
     use crate::recurrences::Recurrence;
-    
-    
+
     #[test]
     fn every_month() {
         let freq = Frequency::Monthly {

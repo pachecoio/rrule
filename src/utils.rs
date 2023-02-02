@@ -130,7 +130,7 @@ pub fn get_next_nth_weekday(current_date: &DateTime<Utc>, interval: i64, nth_wee
         }
     }
     // Return first supported nth weekday of next month
-    let mut res = current_date.shift_months(interval)?.with_day(1)?;
+    let mut res = current_date.with_day(1)?.shift_months(interval)?;
     let weekday_num_diff = ordered_weekdays[0].week_number as i64 - 1;
     res = res.shift_weeks(weekday_num_diff)?;
 
@@ -410,4 +410,16 @@ mod test_nth_weekdays {
         assert_eq!(result.unwrap(), DateTime::<Utc>::from_str("2023-01-04T00:00:00Z").unwrap());
     }
 
+    #[test]
+    fn test_get_next_nth_weekday_when_last_day_of_the_month() {
+        let date = DateTime::<Utc>::from_str("2023-01-31T00:00:00Z").unwrap();
+        let result = get_next_nth_weekday(
+            &date,
+            1,
+            &vec![
+                NthWeekday::new(Weekday::Wed, 1),
+            ]
+        );
+        assert_eq!(result.unwrap(), DateTime::<Utc>::from_str("2023-02-01T00:00:00Z").unwrap());
+    }
 }

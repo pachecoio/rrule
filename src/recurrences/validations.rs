@@ -210,20 +210,18 @@ pub fn validate_monthly_nth_weekday_duration(nth_weekday: &NthWeekday, next_mont
     // Use last day of previous month as a reference to get the next nth weekday of current month
     let last_day_prev_month = Utc::now()
         .with_day(1)
-        .unwrap()
-        .shift_days(-1)
-        .unwrap();
+        .unwrap() - Duration::days(1);
 
-    let date = get_next_nth_weekday(
+    let first_nth_datetime = get_next_nth_weekday(
         &last_day_prev_month,
         1,
         &vec![nth_weekday.clone()]
     ).unwrap();
 
-    let projected_date = date + *duration;
+    let projected_date = first_nth_datetime + *duration;
 
     let next_date = get_next_nth_weekday(
-        &date,
+        &first_nth_datetime,
         1,
         &vec![next_monthday.clone()]
     ).unwrap();

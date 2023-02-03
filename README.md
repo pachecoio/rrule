@@ -1,7 +1,7 @@
-# RRule
+# RRules
 
-A library to manage recurrence rules following the standards from [RFC-5547](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html).
-
+A library to manage recurrence rules inspired by the standards from [RFC-5547](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html).
+It provides the ability to define recurrence rules for events, and then iterate over them to get the dates that match the recurrence rules.
 
 # How to use it
 

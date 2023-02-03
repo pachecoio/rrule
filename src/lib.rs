@@ -1,7 +1,7 @@
 mod frequencies;
 mod recurrences;
-mod utils;
 mod serializer;
+mod utils;
 
 pub use frequencies::{Frequency, MonthlyDate, NthWeekday, Time};
 

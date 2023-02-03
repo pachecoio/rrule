@@ -1,4 +1,4 @@
-use std::cmp::{Ordering};
+use std::cmp::Ordering;
 
 use crate::frequencies::errors::InvalidFrequency;
 use crate::frequencies::validations::{
@@ -253,7 +253,8 @@ impl Frequency {
                 if let Some(by_monthly_date) = by_monthly_date {
                     let month = date.month() as i32;
                     let day = date.day() as i32;
-                    return by_monthly_date.month.number_from_month() == month as u32 && by_monthly_date.day == day;
+                    return by_monthly_date.month.number_from_month() == month as u32
+                        && by_monthly_date.day == day;
                 }
                 true
             }
@@ -347,7 +348,6 @@ fn next_yearly_event(
     interval: i32,
     by_monthly_date: &Option<MonthlyDate>,
 ) -> Option<DateTime<Utc>> {
-
     if let Some(by_monthly_date) = by_monthly_date {
         let month_number = by_monthly_date.month.number_from_month();
         let result = current_date
@@ -358,7 +358,7 @@ fn next_yearly_event(
             Some(result)
         } else {
             result.shift_years(interval as i64)
-        }
+        };
     }
     current_date.shift_years(interval as i64)
 }

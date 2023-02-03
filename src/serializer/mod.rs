@@ -1,6 +1,6 @@
-use std::fmt::{Display, Formatter};
-use chrono::Weekday;
 use crate::{Frequency, NthWeekday, Time};
+use chrono::Weekday;
+use std::fmt::{Display, Formatter};
 
 impl Display for Time {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -28,7 +28,12 @@ impl WeekdayUtils for Weekday {
 
 impl Display for NthWeekday {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}{}", self.week_number, WeekdayUtils::to_string(&self.weekday))
+        write!(
+            f,
+            "{}{}",
+            self.week_number,
+            WeekdayUtils::to_string(&self.weekday)
+        )
     }
 }
 
@@ -49,7 +54,8 @@ impl Display for Frequency {
                 if by_time.is_empty() {
                     return write!(f, "{value}");
                 }
-                let by_time_values: Vec<String> = by_time.iter().map(|time| time.to_string()).collect();
+                let by_time_values: Vec<String> =
+                    by_time.iter().map(|time| time.to_string()).collect();
                 value.push_str(&format!(";BYTIME={}", by_time_values.join(",")));
                 write!(f, "{value}")
             }
@@ -58,29 +64,45 @@ impl Display for Frequency {
                 if by_day.is_empty() {
                     return write!(f, "{value}");
                 }
-                let by_day_values: Vec<String> = by_day.iter().map(WeekdayUtils::to_string).collect();
+                let by_day_values: Vec<String> =
+                    by_day.iter().map(WeekdayUtils::to_string).collect();
                 value.push_str(&format!(";BYDAY={}", by_day_values.join(",")));
                 write!(f, "{value}")
             }
-            Frequency::Monthly { interval, by_month_day, nth_weekdays } => {
+            Frequency::Monthly {
+                interval,
+                by_month_day,
+                nth_weekdays,
+            } => {
                 let mut value = format!("FREQ=MONTHLY;INTERVAL={interval}");
 
                 if !by_month_day.is_empty() {
-                    let by_month_day_values: Vec<String> = by_month_day.iter().map(|day| day.to_string()).collect();
+                    let by_month_day_values: Vec<String> =
+                        by_month_day.iter().map(|day| day.to_string()).collect();
                     value.push_str(&format!(";BYMONTHDAY={}", by_month_day_values.join(",")));
                 }
 
                 if !nth_weekdays.is_empty() {
-                    let nth_weekdays_values: Vec<String> = nth_weekdays.iter().map(|nth_weekday| nth_weekday.to_string()).collect();
+                    let nth_weekdays_values: Vec<String> = nth_weekdays
+                        .iter()
+                        .map(|nth_weekday| nth_weekday.to_string())
+                        .collect();
                     value.push_str(&format!(";BYDAY={}", nth_weekdays_values.join(",")));
                 }
 
                 write!(f, "{value}")
             }
-            Frequency::Yearly { interval, by_monthly_date } => {
+            Frequency::Yearly {
+                interval,
+                by_monthly_date,
+            } => {
                 let mut value = format!("FREQ=YEARLY;INTERVAL={interval}");
                 if let Some(by_monthly_date) = by_monthly_date {
-                    value.push_str(&format!(";BYMONTH={};BYMONTHDAY={}", by_monthly_date.month.number_from_month(), by_monthly_date.day));
+                    value.push_str(&format!(
+                        ";BYMONTH={};BYMONTHDAY={}",
+                        by_monthly_date.month.number_from_month(),
+                        by_monthly_date.day
+                    ));
                 }
                 write!(f, "{value}")
             }
@@ -90,9 +112,9 @@ impl Display for Frequency {
 
 #[cfg(test)]
 mod test_serialize {
-    use std::str::FromStr;
-    use chrono::{Month, Weekday};
     use crate::{Frequency, MonthlyDate, NthWeekday, Time};
+    use chrono::{Month, Weekday};
+    use std::str::FromStr;
 
     #[test]
     fn test_serialize_secondly() {
@@ -105,7 +127,7 @@ mod test_serialize {
         let frequency = Frequency::Minutely { interval: 1 };
         assert_eq!(frequency.to_string(), "FREQ=MINUTELY;INTERVAL=1");
     }
-    
+
     #[test]
     fn test_serialize_hourly() {
         let frequency = Frequency::Hourly { interval: 1 };
@@ -114,85 +136,147 @@ mod test_serialize {
 
     #[test]
     fn test_serialize_daily() {
-        let frequency = Frequency::Daily { interval: 1, by_time: vec![] };
+        let frequency = Frequency::Daily {
+            interval: 1,
+            by_time: vec![],
+        };
         assert_eq!(frequency.to_string(), "FREQ=DAILY;INTERVAL=1");
     }
 
     #[test]
     fn test_serialize_daily_by_time() {
-        let frequency = Frequency::Daily { interval: 1, by_time: vec![Time::from_str("09:00").unwrap()] };
+        let frequency = Frequency::Daily {
+            interval: 1,
+            by_time: vec![Time::from_str("09:00").unwrap()],
+        };
         assert_eq!(frequency.to_string(), "FREQ=DAILY;INTERVAL=1;BYTIME=09:00");
     }
 
     #[test]
     fn test_serialize_daily_by_time_multiple() {
-        let frequency = Frequency::Daily { interval: 1, by_time: vec![Time::from_str("09:00").unwrap(), Time::from_str("10:00").unwrap()] };
-        assert_eq!(frequency.to_string(), "FREQ=DAILY;INTERVAL=1;BYTIME=09:00,10:00");
+        let frequency = Frequency::Daily {
+            interval: 1,
+            by_time: vec![
+                Time::from_str("09:00").unwrap(),
+                Time::from_str("10:00").unwrap(),
+            ],
+        };
+        assert_eq!(
+            frequency.to_string(),
+            "FREQ=DAILY;INTERVAL=1;BYTIME=09:00,10:00"
+        );
     }
 
     #[test]
     fn test_serialize_weekly() {
-        let frequency = Frequency::Weekly { interval: 1, by_day: vec![] };
+        let frequency = Frequency::Weekly {
+            interval: 1,
+            by_day: vec![],
+        };
         assert_eq!(frequency.to_string(), "FREQ=WEEKLY;INTERVAL=1");
     }
 
     #[test]
     fn test_serialize_weekly_by_day() {
-        let frequency = Frequency::Weekly { interval: 1, by_day: vec![Weekday::Mon] };
+        let frequency = Frequency::Weekly {
+            interval: 1,
+            by_day: vec![Weekday::Mon],
+        };
         assert_eq!(frequency.to_string(), "FREQ=WEEKLY;INTERVAL=1;BYDAY=MO");
     }
 
     #[test]
     fn test_serialize_weekly_by_day_multiple() {
-        let frequency = Frequency::Weekly { interval: 1, by_day: vec![Weekday::Mon, Weekday::Tue] };
+        let frequency = Frequency::Weekly {
+            interval: 1,
+            by_day: vec![Weekday::Mon, Weekday::Tue],
+        };
         assert_eq!(frequency.to_string(), "FREQ=WEEKLY;INTERVAL=1;BYDAY=MO,TU");
     }
 
     #[test]
     fn test_serialize_monthly() {
-        let frequency = Frequency::Monthly { interval: 1, by_month_day: vec![], nth_weekdays: vec![] };
+        let frequency = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![],
+            nth_weekdays: vec![],
+        };
         assert_eq!(frequency.to_string(), "FREQ=MONTHLY;INTERVAL=1");
     }
 
     #[test]
     fn test_serialize_monthly_by_month_day() {
-        let frequency = Frequency::Monthly { interval: 1, by_month_day: vec![1], nth_weekdays: vec![] };
-        assert_eq!(frequency.to_string(), "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=1");
+        let frequency = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![1],
+            nth_weekdays: vec![],
+        };
+        assert_eq!(
+            frequency.to_string(),
+            "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=1"
+        );
     }
 
     #[test]
     fn test_serialize_monthly_by_month_day_multiple() {
-        let frequency = Frequency::Monthly { interval: 1, by_month_day: vec![1, 2], nth_weekdays: vec![] };
-        assert_eq!(frequency.to_string(), "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=1,2");
+        let frequency = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![1, 2],
+            nth_weekdays: vec![],
+        };
+        assert_eq!(
+            frequency.to_string(),
+            "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=1,2"
+        );
     }
 
     #[test]
     fn test_serialize_monthly_by_nth_weekday() {
-        let frequency = Frequency::Monthly { interval: 1, by_month_day: vec![], nth_weekdays: vec![
-            NthWeekday::new(Weekday::Mon, 1),
-        ] };
+        let frequency = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![],
+            nth_weekdays: vec![NthWeekday::new(Weekday::Mon, 1)],
+        };
         assert_eq!(frequency.to_string(), "FREQ=MONTHLY;INTERVAL=1;BYDAY=1MO");
     }
 
     #[test]
     fn test_serialize_monthly_by_nth_weekday_multiple() {
-        let frequency = Frequency::Monthly { interval: 1, by_month_day: vec![], nth_weekdays: vec![
-            NthWeekday::new(Weekday::Mon, 1),
-            NthWeekday::new(Weekday::Tue, 2),
-        ] };
-        assert_eq!(frequency.to_string(), "FREQ=MONTHLY;INTERVAL=1;BYDAY=1MO,2TU");
+        let frequency = Frequency::Monthly {
+            interval: 1,
+            by_month_day: vec![],
+            nth_weekdays: vec![
+                NthWeekday::new(Weekday::Mon, 1),
+                NthWeekday::new(Weekday::Tue, 2),
+            ],
+        };
+        assert_eq!(
+            frequency.to_string(),
+            "FREQ=MONTHLY;INTERVAL=1;BYDAY=1MO,2TU"
+        );
     }
 
     #[test]
     fn test_serialize_yearly() {
-        let frequency = Frequency::Yearly { interval: 1, by_monthly_date: None };
+        let frequency = Frequency::Yearly {
+            interval: 1,
+            by_monthly_date: None,
+        };
         assert_eq!(frequency.to_string(), "FREQ=YEARLY;INTERVAL=1");
     }
 
     #[test]
     fn test_serialize_yearly_by_monthly_date() {
-        let frequency = Frequency::Yearly { interval: 1, by_monthly_date: Some(MonthlyDate { month: Month::January, day: 1 }) };
-        assert_eq!(frequency.to_string(), "FREQ=YEARLY;INTERVAL=1;BYMONTH=1;BYMONTHDAY=1");
+        let frequency = Frequency::Yearly {
+            interval: 1,
+            by_monthly_date: Some(MonthlyDate {
+                month: Month::January,
+                day: 1,
+            }),
+        };
+        assert_eq!(
+            frequency.to_string(),
+            "FREQ=YEARLY;INTERVAL=1;BYMONTH=1;BYMONTHDAY=1"
+        );
     }
-
 }

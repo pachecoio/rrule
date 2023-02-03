@@ -79,6 +79,9 @@ impl Display for Frequency {
             }
             Frequency::Yearly { interval, by_monthly_date } => {
                 let mut value = format!("FREQ=YEARLY;INTERVAL={}", interval);
+                if let Some(by_monthly_date) = by_monthly_date {
+                    value.push_str(&format!(";BYMONTH={};BYMONTHDAY={}", by_monthly_date.month.number_from_month(), by_monthly_date.day));
+                }
                 write!(f, "{value}")
             }
         }
@@ -184,6 +187,12 @@ mod test_serialize {
     fn test_serialize_yearly() {
         let frequency = Frequency::Yearly { interval: 1, by_monthly_date: None };
         assert_eq!(frequency.to_string(), "FREQ=YEARLY;INTERVAL=1");
+    }
+
+    #[test]
+    fn test_serialize_yearly_by_monthly_date() {
+        let frequency = Frequency::Yearly { interval: 1, by_monthly_date: Some(MonthlyDate { month: Month::January, day: 1 }) };
+        assert_eq!(frequency.to_string(), "FREQ=YEARLY;INTERVAL=1;BYMONTH=1;BYMONTHDAY=1");
     }
 
 }

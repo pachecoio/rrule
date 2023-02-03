@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 use chrono::Weekday;
-use crate::{Frequency, MonthlyDate, NthWeekday, Time};
+use crate::{Frequency, NthWeekday, Time};
 
 impl Display for Time {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -36,16 +36,16 @@ impl Display for Frequency {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Frequency::Secondly { interval } => {
-                write!(f, "FREQ=SECONDLY;INTERVAL={}", interval)
+                write!(f, "FREQ=SECONDLY;INTERVAL={interval}")
             }
             Frequency::Minutely { interval } => {
-                write!(f, "FREQ=MINUTELY;INTERVAL={}", interval)
+                write!(f, "FREQ=MINUTELY;INTERVAL={interval}")
             }
             Frequency::Hourly { interval } => {
-                write!(f, "FREQ=HOURLY;INTERVAL={}", interval)
+                write!(f, "FREQ=HOURLY;INTERVAL={interval}")
             }
             Frequency::Daily { interval, by_time } => {
-                let mut value = format!("FREQ=DAILY;INTERVAL={}", interval);
+                let mut value = format!("FREQ=DAILY;INTERVAL={interval}");
                 if by_time.is_empty() {
                     return write!(f, "{value}");
                 }
@@ -54,16 +54,16 @@ impl Display for Frequency {
                 write!(f, "{value}")
             }
             Frequency::Weekly { interval, by_day } => {
-                let mut value = format!("FREQ=WEEKLY;INTERVAL={}", interval);
+                let mut value = format!("FREQ=WEEKLY;INTERVAL={interval}");
                 if by_day.is_empty() {
                     return write!(f, "{value}");
                 }
-                let by_day_values: Vec<String> = by_day.iter().map(|day| WeekdayUtils::to_string(day)).collect();
+                let by_day_values: Vec<String> = by_day.iter().map(WeekdayUtils::to_string).collect();
                 value.push_str(&format!(";BYDAY={}", by_day_values.join(",")));
                 write!(f, "{value}")
             }
             Frequency::Monthly { interval, by_month_day, nth_weekdays } => {
-                let mut value = format!("FREQ=MONTHLY;INTERVAL={}", interval);
+                let mut value = format!("FREQ=MONTHLY;INTERVAL={interval}");
 
                 if !by_month_day.is_empty() {
                     let by_month_day_values: Vec<String> = by_month_day.iter().map(|day| day.to_string()).collect();
@@ -78,7 +78,7 @@ impl Display for Frequency {
                 write!(f, "{value}")
             }
             Frequency::Yearly { interval, by_monthly_date } => {
-                let mut value = format!("FREQ=YEARLY;INTERVAL={}", interval);
+                let mut value = format!("FREQ=YEARLY;INTERVAL={interval}");
                 if let Some(by_monthly_date) = by_monthly_date {
                     value.push_str(&format!(";BYMONTH={};BYMONTHDAY={}", by_monthly_date.month.number_from_month(), by_monthly_date.day));
                 }

@@ -1,5 +1,4 @@
-use std::cmp::{max, Ordering};
-use std::fmt::{Display, Formatter};
+use std::cmp::{Ordering};
 
 use crate::frequencies::errors::InvalidFrequency;
 use crate::frequencies::validations::{
@@ -354,110 +353,12 @@ fn next_yearly_event(
         let result = current_date
             .with_month(month_number)
             .unwrap()
-            .with_day(by_monthly_date.day as u32);
-        return match result {
-            Some(d) => {
-                if d > *current_date {
-                    Some(d)
-                } else {
-                    d.shift_years(interval as i64)
-                }
-            },
-            None => None,
-        };
+            .with_day(by_monthly_date.day as u32)?;
+        return if result > *current_date {
+            Some(result)
+        } else {
+            result.shift_years(interval as i64)
+        }
     }
     current_date.shift_years(interval as i64)
-}
-
-// impl Display for Frequency {
-//     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-//         match self {
-//             Frequency::Secondly { interval } => {
-//                 write!(f, "{}", get_interval_string(*interval, "second"))
-//             }
-//             Frequency::Minutely { interval } => {
-//                 write!(f, "{}", get_interval_string(*interval, "minute"))
-//             }
-//             Frequency::Hourly { interval } => {
-//                 write!(f, "{}", get_interval_string(*interval, "hour"))
-//             }
-//             Frequency::Daily { interval, by_time } => {
-//                 let amount = match get_amount_format(by_time.len()) {
-//                     None => "".to_string(),
-//                     Some(v) => format!("{v} "),
-//                 };
-//                 let count = if *interval > 1 {
-//                     format!("every {interval}")
-//                 } else {
-//                     "a".to_string()
-//                 };
-//                 let plural = if *interval > 1 { "s" } else { "" };
-//                 write!(f, "{amount}{count} day{plural}")
-//             }
-//             Frequency::Weekly { interval, by_day } => {
-//                 let amount = match get_amount_format(by_day.len()) {
-//                     None => "".to_string(),
-//                     Some(v) => format!("{v} "),
-//                 };
-//                 let count = if *interval > 1 {
-//                     format!("every {interval}")
-//                 } else {
-//                     "a".to_string()
-//                 };
-//                 let plural = if *interval > 1 { "s" } else { "" };
-//                 write!(f, "{amount}{count} week{plural}")
-//             }
-//             Frequency::Monthly {
-//                 interval,
-//                 by_month_day,
-//                 nth_weekdays,
-//             } => {
-//                 let amount = match get_amount_format(max(by_month_day.len(), nth_weekdays.len())) {
-//                     None => "".to_string(),
-//                     Some(v) => format!("{v} "),
-//                 };
-//                 let count = if *interval > 1 {
-//                     format!("every {interval}")
-//                 } else {
-//                     "a".to_string()
-//                 };
-//                 let plural = if *interval > 1 { "s" } else { "" };
-//                 write!(f, "{amount}{count} month{plural}")
-//             }
-//             Frequency::Yearly {
-//                 interval,
-//                 by_monthly_date,
-//             } => {
-//                 let amount = match get_amount_format(by_monthly_date.len()) {
-//                     None => "".to_string(),
-//                     Some(v) => format!("{v} "),
-//                 };
-//                 let count = if *interval > 1 {
-//                     format!("every {interval}")
-//                 } else {
-//                     "a".to_string()
-//                 };
-//                 let plural = if *interval > 1 { "s" } else { "" };
-//                 write!(f, "{amount}{count} year{plural}")
-//             }
-//         }
-//     }
-// }
-
-fn get_interval_string(interval: i32, unit: &str) -> String {
-    let count = if interval > 1 {
-        format!("Every {interval}")
-    } else {
-        "Every".to_string()
-    };
-    let plural = if interval > 1 { "s" } else { "" };
-    format!("{count} {unit}{plural}")
-}
-
-fn get_amount_format(by_time: usize) -> Option<String> {
-    match by_time {
-        0 | 1 => Some("Once".to_string()),
-        2 => Some("Twice".to_string()),
-        amount => Some(format!("{amount} times")),
-    }
 }

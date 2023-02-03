@@ -108,7 +108,8 @@ pub fn validate_monthly(
 
 pub fn validate_yearly(
     _interval: &i32,
-    _by_monthly_date: &[MonthlyDate],
+    _by_monthly_date: &Option<MonthlyDate>,
 ) -> Result<(), InvalidFrequency> {
+    // Todo: Implement
     Ok(())
 }

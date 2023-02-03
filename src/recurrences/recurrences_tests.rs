@@ -337,7 +337,7 @@ mod yearly_recurrences {
         let end = DateTime::<Utc>::from_str("2025-01-01T00:00:00Z").unwrap();
         let frequency = Frequency::Yearly {
             interval: 1,
-            by_monthly_date: vec![],
+            by_monthly_date: None,
         };
         let recurrence =
             Recurrence::new(frequency, start, Some(end), Some(Duration::weeks(1))).unwrap();
@@ -351,28 +351,5 @@ mod yearly_recurrences {
                 DateTime::<Utc>::from_str("2025-01-01T00:00:00Z").unwrap(),
             ]
         );
-    }
-
-    #[test]
-    fn test_twice_a_year() {
-        let start = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
-        let end = DateTime::<Utc>::from_str("2024-01-01T00:00:00Z").unwrap();
-        let frequency = Frequency::Yearly {
-            interval: 1,
-            by_monthly_date: vec![
-                MonthlyDate {
-                    month: Month::January,
-                    day: 15,
-                },
-                MonthlyDate {
-                    month: Month::June,
-                    day: 1,
-                },
-            ],
-        };
-        let recurrence =
-            Recurrence::new(frequency, start, Some(end), Some(Duration::weeks(1))).unwrap();
-        let dates: Vec<DateTime<Utc>> = recurrence.collect();
-        assert_eq!(dates.len(), 2);
     }
 }

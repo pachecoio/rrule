@@ -200,12 +200,7 @@ impl FromStr for MonthlyDate {
         let re = Regex::new(r"^(?P<month>[A-Z]{3})(?P<day>\d+)$").unwrap();
         match re.captures(s) {
             Some(captures) => {
-                let month_number = match captures
-                    .name("month")
-                    .unwrap()
-                    .as_str()
-                    .parse::<i32>()
-                {
+                let month_number = match captures.name("month").unwrap().as_str().parse::<i32>() {
                     Ok(month_number) => month_number,
                     Err(_) => {
                         return Err(InvalidFrequency::Format {
@@ -222,7 +217,10 @@ impl FromStr for MonthlyDate {
                         })
                     }
                 };
-                Ok(MonthlyDate { month, day: day.into() })
+                Ok(MonthlyDate {
+                    month,
+                    day: day.into(),
+                })
             }
             None => {
                 return Err(InvalidFrequency::Format {
@@ -357,7 +355,7 @@ fn parse_yearly(s: &String) -> Result<Frequency, InvalidFrequency> {
 
     Ok(Frequency::Yearly {
         interval,
-        by_monthly_date
+        by_monthly_date,
     })
 }
 
@@ -579,7 +577,10 @@ fn extract_monthly_date(s: &str) -> Result<(Option<MonthlyDate>, String), Invali
             message: format!("Cannot parse monthly_date from value {s}"),
         });
     }
-    let monthly_date = MonthlyDate { day: days[0], month: months[0] };
+    let monthly_date = MonthlyDate {
+        day: days[0],
+        month: months[0],
+    };
     Ok((Some(monthly_date), s))
 }
 
@@ -769,8 +770,11 @@ mod test_serialize {
 
 #[cfg(test)]
 mod test_helpers {
+    use crate::serializer::{
+        extract_frequency, extract_interval, extract_monthdays, extract_monthly_date,
+        extract_months, extract_nth_weekdays, extract_times, extract_weekdays, WeekdayUtils,
+    };
     use chrono::Month;
-    use crate::serializer::{extract_frequency, extract_interval, extract_monthdays, extract_monthly_date, extract_months, extract_nth_weekdays, extract_times, extract_weekdays, WeekdayUtils};
 
     #[test]
     fn test_extract_frequency() {

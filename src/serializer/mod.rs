@@ -163,7 +163,12 @@ impl FromStr for NthWeekday {
         let re = Regex::new(r"^(?P<week_number>\d+)(?P<weekday>[A-Z]{2})$").unwrap();
         match re.captures(s) {
             Some(captures) => {
-                let week_number = match captures.name("week_number").unwrap().as_str().parse::<i32>() {
+                let week_number = match captures
+                    .name("week_number")
+                    .unwrap()
+                    .as_str()
+                    .parse::<i32>()
+                {
                     Ok(week_number) => week_number,
                     Err(_) => {
                         return Err(InvalidFrequency::Format {
@@ -176,7 +181,7 @@ impl FromStr for NthWeekday {
                     week_number,
                     weekday,
                 })
-            },
+            }
             None => {
                 return Err(InvalidFrequency::Format {
                     message: format!("Cannot parse nth weekday from value {s}"),
@@ -263,7 +268,11 @@ fn parse_monthly(s: &String) -> Result<Frequency, InvalidFrequency> {
     let (by_month_day, s) = extract_monthdays(&s)?;
     let (nth_weekdays, _) = extract_nth_weekdays(&s)?;
 
-    Ok(Frequency::Monthly { interval, by_month_day, nth_weekdays })
+    Ok(Frequency::Monthly {
+        interval,
+        by_month_day,
+        nth_weekdays,
+    })
 }
 
 fn extract_frequency(s: &str) -> Option<(String, String)> {
@@ -619,7 +628,10 @@ mod test_serialize {
 
 #[cfg(test)]
 mod test_helpers {
-    use crate::serializer::{extract_frequency, extract_interval, extract_monthdays, extract_nth_weekdays, extract_times, extract_weekdays, WeekdayUtils};
+    use crate::serializer::{
+        extract_frequency, extract_interval, extract_monthdays, extract_nth_weekdays,
+        extract_times, extract_weekdays, WeekdayUtils,
+    };
 
     #[test]
     fn test_extract_frequency() {

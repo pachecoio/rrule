@@ -1,6 +1,6 @@
-use std::str::FromStr;
-use chrono::{DateTime, Duration, Utc};
 use crate::{Frequency, Recurrence, RecurrenceInvalid};
+use chrono::{DateTime, Duration, Utc};
+use std::str::FromStr;
 
 impl FromStr for Recurrence {
     type Err = RecurrenceInvalid;
@@ -8,9 +8,11 @@ impl FromStr for Recurrence {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let frequency = match Frequency::from_str(s) {
             Ok(f) => f,
-            Err(e) => return Err(RecurrenceInvalid {
-                message: format!("Invalid frequency: {}", e),
-            }),
+            Err(e) => {
+                return Err(RecurrenceInvalid {
+                    message: format!("Invalid frequency: {e}"),
+                })
+            }
         };
         let start_date = extract_start_date(s)?;
         let end_date = None;
@@ -21,7 +23,9 @@ impl FromStr for Recurrence {
 
 pub fn extract_start_date(s: &str) -> Result<DateTime<Utc>, RecurrenceInvalid> {
     use regex::Regex;
-    let re = Regex::new(r"DTSTART=(?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)").unwrap();
+    let re =
+        Regex::new(r"DTSTART=(?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)")
+            .unwrap();
     let caps = re.captures(s).ok_or(RecurrenceInvalid {
         message: "No DTSTART found".to_string(),
     })?;
@@ -29,7 +33,7 @@ pub fn extract_start_date(s: &str) -> Result<DateTime<Utc>, RecurrenceInvalid> {
         message: "No date found".to_string(),
     })?;
     let date = DateTime::<Utc>::from_str(date.as_str()).map_err(|e| RecurrenceInvalid {
-        message: format!("Invalid date: {}", e),
+        message: format!("Invalid date: {e}"),
     })?;
     Ok(date)
 }
@@ -52,7 +56,7 @@ fn extract_seconds_duration(s: &str) -> Result<Duration, RecurrenceInvalid> {
     })?;
     let seconds = parse_duration_pair(&caps, "seconds");
     let seconds = seconds.parse::<i64>().map_err(|e| RecurrenceInvalid {
-        message: format!("Invalid seconds: {}", e),
+        message: format!("Invalid seconds: {e}"),
     })?;
     let duration = Duration::seconds(seconds);
     Ok(duration)
@@ -66,7 +70,7 @@ fn extract_minutes_duration(s: &str) -> Result<Duration, RecurrenceInvalid> {
     })?;
     let minutes = parse_duration_pair(&caps, "minutes");
     let minutes = minutes.parse::<i64>().map_err(|e| RecurrenceInvalid {
-        message: format!("Invalid minutes: {}", e),
+        message: format!("Invalid minutes: {e}"),
     })?;
     let duration = Duration::minutes(minutes);
     Ok(duration)
@@ -80,7 +84,7 @@ fn extract_hours_duration(s: &str) -> Result<Duration, RecurrenceInvalid> {
     })?;
     let hours = parse_duration_pair(&caps, "hours");
     let hours = hours.parse::<i64>().map_err(|e| RecurrenceInvalid {
-        message: format!("Invalid hours: {}", e),
+        message: format!("Invalid hours: {e}"),
     })?;
     let duration = Duration::hours(hours);
     Ok(duration)
@@ -94,7 +98,7 @@ fn extract_days_duration(s: &str) -> Result<Duration, RecurrenceInvalid> {
     })?;
     let days = parse_duration_pair(&caps, "days");
     let days = days.parse::<i64>().map_err(|e| RecurrenceInvalid {
-        message: format!("Invalid days: {}", e),
+        message: format!("Invalid days: {e}"),
     })?;
     let duration = Duration::days(days);
     Ok(duration)
@@ -108,7 +112,7 @@ fn extract_weeks_duration(s: &str) -> Result<Duration, RecurrenceInvalid> {
     })?;
     let weeks = parse_duration_pair(&caps, "weeks");
     let weeks = weeks.parse::<i64>().map_err(|e| RecurrenceInvalid {
-        message: format!("Invalid weeks: {}", e),
+        message: format!("Invalid weeks: {e}"),
     })?;
     let duration = Duration::weeks(weeks);
     Ok(duration)
@@ -124,9 +128,9 @@ fn parse_duration_pair<'a>(caps: &'a regex::Captures, key: &'a str) -> &'a str {
 
 #[cfg(test)]
 mod test_helpers {
-    use std::str::FromStr;
-    use chrono::{DateTime, Duration, Utc};
     use crate::recurrences::serializers::{extract_duration, extract_start_date};
+    use chrono::{DateTime, Duration, Utc};
+    use std::str::FromStr;
 
     #[test]
     fn test_extract_start() {
@@ -218,19 +222,22 @@ mod test_helpers {
 
 #[cfg(test)]
 mod deserialize_tests {
-    use std::str::FromStr;
-    use chrono::{DateTime, Utc};
     use crate::{Frequency, Recurrence};
+    use chrono::{DateTime, Utc};
+    use std::str::FromStr;
 
     #[test]
     fn secondly_recurrence_from_str() {
         let value = "FREQ=SECONDLY;INTERVAL=1;DTSTART=2020-01-01T00:00:00Z;DURATION=PT1S";
         let recurrence = Recurrence::from_str(value).unwrap();
         let events = recurrence.take(2).collect::<Vec<DateTime<Utc>>>();
-        assert_eq!(events, vec![
-            DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2020-01-01T00:00:01Z").unwrap(),
-        ]);
+        assert_eq!(
+            events,
+            vec![
+                DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2020-01-01T00:00:01Z").unwrap(),
+            ]
+        );
     }
 
     #[test]
@@ -238,10 +245,13 @@ mod deserialize_tests {
         let value = "FREQ=MINUTELY;INTERVAL=1;DTSTART=2020-01-01T00:00:00Z;DURATION=PT1M";
         let recurrence = Recurrence::from_str(value).unwrap();
         let events = recurrence.take(2).collect::<Vec<DateTime<Utc>>>();
-        assert_eq!(events, vec![
-            DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2020-01-01T00:01:00Z").unwrap(),
-        ]);
+        assert_eq!(
+            events,
+            vec![
+                DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2020-01-01T00:01:00Z").unwrap(),
+            ]
+        );
     }
 
     #[test]
@@ -249,10 +259,13 @@ mod deserialize_tests {
         let value = "FREQ=HOURLY;INTERVAL=1;DTSTART=2020-01-01T00:00:00Z;DURATION=PT1H";
         let recurrence = Recurrence::from_str(value).unwrap();
         let events = recurrence.take(2).collect::<Vec<DateTime<Utc>>>();
-        assert_eq!(events, vec![
-            DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2020-01-01T01:00:00Z").unwrap(),
-        ]);
+        assert_eq!(
+            events,
+            vec![
+                DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2020-01-01T01:00:00Z").unwrap(),
+            ]
+        );
     }
 
     #[test]
@@ -260,10 +273,13 @@ mod deserialize_tests {
         let value = "FREQ=DAILY;INTERVAL=1;DTSTART=2020-01-01T00:00:00Z;DURATION=PT1D";
         let recurrence = Recurrence::from_str(value).unwrap();
         let events = recurrence.take(2).collect::<Vec<DateTime<Utc>>>();
-        assert_eq!(events, vec![
-            DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2020-01-02T00:00:00Z").unwrap(),
-        ]);
+        assert_eq!(
+            events,
+            vec![
+                DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2020-01-02T00:00:00Z").unwrap(),
+            ]
+        );
     }
 
     #[test]
@@ -271,10 +287,13 @@ mod deserialize_tests {
         let value = "FREQ=WEEKLY;INTERVAL=1;DTSTART=2020-01-01T00:00:00Z;DURATION=PT1W";
         let recurrence = Recurrence::from_str(value).unwrap();
         let events = recurrence.take(2).collect::<Vec<DateTime<Utc>>>();
-        assert_eq!(events, vec![
-            DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2020-01-08T00:00:00Z").unwrap(),
-        ]);
+        assert_eq!(
+            events,
+            vec![
+                DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2020-01-08T00:00:00Z").unwrap(),
+            ]
+        );
     }
 
     #[test]
@@ -282,10 +301,13 @@ mod deserialize_tests {
         let value = "FREQ=MONTHLY;INTERVAL=1;DTSTART=2020-01-01T00:00:00Z";
         let recurrence = Recurrence::from_str(value).unwrap();
         let events = recurrence.take(2).collect::<Vec<DateTime<Utc>>>();
-        assert_eq!(events, vec![
-            DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2020-02-01T00:00:00Z").unwrap(),
-        ]);
+        assert_eq!(
+            events,
+            vec![
+                DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2020-02-01T00:00:00Z").unwrap(),
+            ]
+        );
     }
 
     #[test]
@@ -293,10 +315,13 @@ mod deserialize_tests {
         let value = "FREQ=YEARLY;INTERVAL=1;DTSTART=2020-01-01T00:00:00Z";
         let recurrence = Recurrence::from_str(value).unwrap();
         let events = recurrence.take(2).collect::<Vec<DateTime<Utc>>>();
-        assert_eq!(events, vec![
-            DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2021-01-01T00:00:00Z").unwrap(),
-        ]);
+        assert_eq!(
+            events,
+            vec![
+                DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2021-01-01T00:00:00Z").unwrap(),
+            ]
+        );
     }
 
     #[test]
@@ -304,11 +329,14 @@ mod deserialize_tests {
         let value = "FREQ=DAILY;INTERVAL=1;DTSTART=2020-01-01T00:00:00Z;BYTIME=09:00,10:00";
         let recurrence = Recurrence::from_str(value).unwrap();
         let events = recurrence.take(3).collect::<Vec<DateTime<Utc>>>();
-        assert_eq!(events, vec![
-            DateTime::<Utc>::from_str("2020-01-01T09:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2020-01-01T10:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2020-01-02T09:00:00Z").unwrap(),
-        ]);
+        assert_eq!(
+            events,
+            vec![
+                DateTime::<Utc>::from_str("2020-01-01T09:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2020-01-01T10:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2020-01-02T09:00:00Z").unwrap(),
+            ]
+        );
     }
 
     #[test]
@@ -316,11 +344,14 @@ mod deserialize_tests {
         let value = "FREQ=WEEKLY;INTERVAL=1;DTSTART=2023-01-01T00:00:00Z;BYDAY=MO,TU";
         let recurrence = Recurrence::from_str(value).unwrap();
         let events = recurrence.take(3).collect::<Vec<DateTime<Utc>>>();
-        assert_eq!(events, vec![
-            DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2023-01-03T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2023-01-09T00:00:00Z").unwrap(),
-        ]);
+        assert_eq!(
+            events,
+            vec![
+                DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2023-01-03T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2023-01-09T00:00:00Z").unwrap(),
+            ]
+        );
     }
 
     #[test]
@@ -328,11 +359,14 @@ mod deserialize_tests {
         let value = "FREQ=MONTHLY;INTERVAL=1;DTSTART=2023-01-01T00:00:00Z;BYMONTHDAY=1,2";
         let recurrence = Recurrence::from_str(value).unwrap();
         let events = recurrence.take(3).collect::<Vec<DateTime<Utc>>>();
-        assert_eq!(events, vec![
-            DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2023-02-01T00:00:00Z").unwrap(),
-        ]);
+        assert_eq!(
+            events,
+            vec![
+                DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2023-02-01T00:00:00Z").unwrap(),
+            ]
+        );
     }
 
     #[test]
@@ -340,21 +374,28 @@ mod deserialize_tests {
         let value = "FREQ=MONTHLY;INTERVAL=1;DTSTART=2023-01-01T00:00:00Z;BYDAY=1MO";
         let recurrence = Recurrence::from_str(value).unwrap();
         let events = recurrence.take(3).collect::<Vec<DateTime<Utc>>>();
-        assert_eq!(events, vec![
-            DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2023-02-06T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2023-03-06T00:00:00Z").unwrap(),
-        ]);
+        assert_eq!(
+            events,
+            vec![
+                DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2023-02-06T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2023-03-06T00:00:00Z").unwrap(),
+            ]
+        );
     }
 
     #[test]
     fn yearly_by_month_date() {
-        let value = "FREQ=YEARLY;INTERVAL=1;DTSTART=2023-01-01T00:00:00Z;BYMONTH=1;BY;BYMONTHDAY=15";
+        let value =
+            "FREQ=YEARLY;INTERVAL=1;DTSTART=2023-01-01T00:00:00Z;BYMONTH=1;BY;BYMONTHDAY=15";
         let recurrence = Recurrence::from_str(value).unwrap();
         let events = recurrence.take(2).collect::<Vec<DateTime<Utc>>>();
-        assert_eq!(events, vec![
-            DateTime::<Utc>::from_str("2023-01-15T00:00:00Z").unwrap(),
-            DateTime::<Utc>::from_str("2024-01-15T00:00:00Z").unwrap(),
-        ]);
+        assert_eq!(
+            events,
+            vec![
+                DateTime::<Utc>::from_str("2023-01-15T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2024-01-15T00:00:00Z").unwrap(),
+            ]
+        );
     }
 }

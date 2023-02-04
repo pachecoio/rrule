@@ -27,6 +27,7 @@ use std::str::FromStr;
 /// };
 /// assert_eq!(three_times_a_month.to_string(), "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=1,10,20");
 /// ```
+#[derive(Debug)]
 pub enum Frequency {
     Secondly {
         interval: i32,
@@ -111,7 +112,16 @@ impl FromStr for Time {
                     message: format!("Invalid time: {time_str}"),
                 })
             }
-            Some(hour) => hour.parse::<i32>().unwrap(),
+            Some(hour) => {
+                match hour.parse::<i32>() {
+                    Ok(hour) => hour,
+                    Err(_) => {
+                        return Err(InvalidFrequency::Time {
+                            message: format!("Invalid time: {time_str}"),
+                        })
+                    }
+                }
+            },
         };
         let minute = match parts.next() {
             None => {
@@ -119,7 +129,16 @@ impl FromStr for Time {
                     message: format!("Invalid time: {time_str}"),
                 })
             }
-            Some(minute) => minute.parse::<i32>().unwrap(),
+            Some(minute) => {
+                match minute.parse::<i32>() {
+                    Ok(minute) => minute,
+                    Err(_) => {
+                        return Err(InvalidFrequency::Time {
+                            message: format!("Invalid time: {time_str}"),
+                        })
+                    }
+                }
+            },
         };
         Ok(Time { hour, minute })
     }
@@ -127,6 +146,7 @@ impl FromStr for Time {
 
 /// Representation of a monthly date
 /// E.g. 1st of January, 2nd of February, etc.
+#[derive(Debug)]
 pub struct MonthlyDate {
     pub month: Month,
     pub day: i32,

@@ -1,6 +1,9 @@
 use crate::{Frequency, NthWeekday, Time};
 use chrono::Weekday;
-use std::fmt::{Display, Formatter};
+use std::fmt::{Display, format, Formatter};
+use std::num::ParseIntError;
+use std::str::FromStr;
+use crate::frequencies::InvalidFrequency;
 
 impl Display for Time {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -108,6 +111,143 @@ impl Display for Frequency {
             }
         }
     }
+}
+
+impl FromStr for Frequency {
+    type Err = InvalidFrequency;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+
+        let (frequency, s) = match extract_frequency(s) {
+            Some(frequency) => frequency,
+            None => return Err(InvalidFrequency::Format {
+                message: format!("Cannot parse frequency from value {s}"),
+            }),
+        };
+
+        match frequency.as_ref() {
+            "SECONDLY" => parse_secondly(&s),
+            "MINUTELY" => parse_minutely(&s),
+            "HOURLY" => parse_hourly(&s),
+            "DAILY" => parse_daily(&s),
+            _ => Err(InvalidFrequency::Format {
+                message: format!("Frequency {frequency} is not supported"),
+            }),
+        }
+    }
+}
+
+fn parse_secondly(s: &str) -> Result<Frequency, InvalidFrequency> {
+    let (interval, _) = match extract_interval(s) {
+        Some(interval) => interval,
+        None => return Err(InvalidFrequency::Format {
+            message: format!("Cannot parse interval from value {s}"),
+        }),
+    };
+    Ok(Frequency::Secondly { interval })
+}
+
+fn parse_minutely(s: &String) -> Result<Frequency, InvalidFrequency> {
+    let (interval, _) = match extract_interval(s) {
+        Some(interval) => interval,
+        None => return Err(InvalidFrequency::Format {
+            message: format!("Cannot parse interval from value {s}"),
+        }),
+    };
+    Ok(Frequency::Minutely { interval })
+}
+
+fn parse_hourly(s: &String) -> Result<Frequency, InvalidFrequency> {
+    let (interval, _) = match extract_interval(s) {
+        Some(interval) => interval,
+        None => return Err(InvalidFrequency::Format {
+            message: format!("Cannot parse interval from value {s}"),
+        }),
+    };
+    Ok(Frequency::Hourly { interval })
+}
+
+fn parse_daily(s: &String) -> Result<Frequency, InvalidFrequency> {
+    let (interval, s) = match extract_interval(s) {
+        Some(interval) => interval,
+        None => return Err(InvalidFrequency::Format {
+            message: format!("Cannot parse interval from value {s}"),
+        }),
+    };
+
+    let (by_time, s) = extract_times(&s)?;
+    Ok(Frequency::Daily { interval, by_time })
+}
+
+fn extract_frequency(s: &str) -> Option<(String, String)> {
+    use regex::Regex;
+    let re = Regex::new(r"FREQ=[A-Z]*;").unwrap();
+    match re.find(s) {
+        Some(pair) => {
+            let (key, value) = split_key_value(&pair)?;
+            Some((value.clone(), s.replace(&format!("{key}={value};"), "")))
+        },
+        None => None,
+    }
+}
+
+fn extract_interval(s: &str) -> Option<(i32, String)> {
+    use regex::Regex;
+    let re = Regex::new(r"INTERVAL=[0-9]*").unwrap();
+    match re.find(s) {
+        Some(pair) => {
+            let (_, value) = split_key_value(&pair)?;
+            match value.parse::<i32>() {
+                Ok(v) => Some((v, s.replace(&format!("INTERVAL={value};"), ""))),
+                Err(_) => None
+            }
+        },
+        None => None,
+    }
+}
+
+fn extract_times(s: &str) -> Result<(Vec<Time>, String), InvalidFrequency> {
+    use regex::Regex;
+    if !s.contains("BYTIME") {
+        return Ok((vec![], s.to_string()));
+    }
+    let re = Regex::new(r"BYTIME=[0-9|:|,]*").unwrap();
+    match re.find(s) {
+        Some(pair) => {
+            let (_, value) = match split_key_value(&pair) {
+                Some(res) => res,
+                None => return Err(InvalidFrequency::Format {
+                    message: format!("Cannot parse by_time from value {s}"),
+                }),
+            };
+            let mut times: Vec<Time> = vec![];
+            for time in value.split(",") {
+                match Time::from_str(time) {
+                    Ok(t) => times.push(t),
+                    Err(_) => return Err(InvalidFrequency::Format {
+                        message: format!("Cannot parse time from value {time}"),
+                    }),
+                }
+            }
+            Ok((times, s.replace(&format!("BYTIME={value}"), "")))
+        },
+        None => Err(InvalidFrequency::Format {
+            message: format!("Cannot parse by_time from value {s}"),
+        }),
+    }
+}
+
+fn split_key_value(pair: &regex::Match) -> Option<(String, String)> {
+    let res = pair.as_str().to_string();
+    let key_value: Vec<&str> = res.split("=").collect();
+    if key_value.len() != 2 {
+        return None;
+    }
+    let value = key_value[1];
+    if value == ";" {
+        return None;
+    }
+    Some((key_value[0].to_string(), value.replace(";", "")))
 }
 
 #[cfg(test)]
@@ -279,4 +419,167 @@ mod test_serialize {
             "FREQ=YEARLY;INTERVAL=1;BYMONTH=1;BYMONTHDAY=1"
         );
     }
+}
+
+#[cfg(test)]
+mod test_helpers {
+    use crate::serializer::{extract_frequency, extract_interval, extract_times};
+
+    #[test]
+    fn test_extract_frequency() {
+        let value = "FREQ=SECONDLY;INTERVAL=1";
+        let (freq, remainder) = extract_frequency(&value).unwrap();
+        assert_eq!(freq, "SECONDLY");
+        assert_eq!(remainder, "INTERVAL=1");
+    }
+
+    #[test]
+    fn test_extract_interval() {
+        let value = "FREQ=SECONDLY;INTERVAL=1";
+        let (interval, remainder) = extract_interval(&value).unwrap();
+        assert_eq!(interval, 1);
+    }
+
+    #[test]
+    fn test_extract_interval_invalid() {
+        let value = "FREQ=SECONDLY;INTERVAL=INVALID";
+        let res = extract_interval(&value);
+        assert!(res.is_none());
+    }
+
+    #[test]
+    fn test_extract_interval_empty() {
+        let value = "FREQ=SECONDLY;INTERVAL=";
+        let res = extract_interval(&value);
+        assert!(res.is_none());
+    }
+
+    #[test]
+    fn test_extract_interval_with_semicolon() {
+        let value = "FREQ=SECONDLY;INTERVAL=1;";
+        let res = extract_interval(&value);
+        assert!(res.is_some());
+        assert_eq!(res.unwrap().0, 1);
+    }
+
+    #[test]
+    fn test_extract_times() {
+        let value = "FREQ=DAILY;INTERVAL=1;BYTIME=10:00";
+        let (times, remainder) = extract_times(&value).unwrap();
+        assert_eq!(times.len(), 1);
+        assert_eq!(times[0].to_string(), "10:00");
+        assert_eq!(remainder, "FREQ=DAILY;INTERVAL=1;");
+    }
+
+    #[test]
+    fn test_extract_times_multiple() {
+        let value = "FREQ=DAILY;INTERVAL=1;BYTIME=10:00,11:00";
+        let (times, remainder) = extract_times(&value).unwrap();
+        assert_eq!(times.len(), 2);
+        assert_eq!(times[0].to_string(), "10:00");
+        assert_eq!(times[1].to_string(), "11:00");
+        assert_eq!(remainder, "FREQ=DAILY;INTERVAL=1;");
+    }
+
+    #[test]
+    fn test_extract_times_empty() {
+        let value = "FREQ=DAILY;INTERVAL=1;BYTIME=";
+        let res = extract_times(&value);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_extract_times_invalid() {
+        let value = "FREQ=DAILY;INTERVAL=1;BYTIME=INVALID";
+        let res = extract_times(&value);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_extract_times_with_semicolon() {
+        let value = "FREQ=DAILY;INTERVAL=1;BYTIME=10:00;";
+        let (times, remainder) = extract_times(&value).unwrap();
+        assert_eq!(times.len(), 1);
+        assert_eq!(times[0].to_string(), "10:00");
+    }
+}
+
+#[cfg(test)]
+mod test_deserialize_from_str {
+    use std::str::FromStr;
+    use chrono::{DateTime, Utc};
+    use crate::frequencies::InvalidFrequency;
+    use crate::Frequency;
+
+    #[test]
+    fn test_invalid_format() {
+        let value = "blabla";
+        let frequency = Frequency::from_str(value);
+        assert!(frequency.is_err());
+        let message = frequency.unwrap_err().to_string();
+        assert_eq!(message, "Invalid format: Cannot parse frequency from value blabla");
+    }
+
+    #[test]
+    fn test_invalid_key() {
+        let value = "INVALID-KEY=INVALID";
+        let frequency = Frequency::from_str(value);
+        assert!(frequency.is_err());
+    }
+
+    #[test]
+    fn secondly_from_str() {
+        let value = "FREQ=SECONDLY;INTERVAL=1";
+        let frequency = Frequency::from_str(value);
+        assert!(frequency.is_ok());
+        let frequency = frequency.unwrap();
+        let now = Utc::now();
+        let next = frequency.next_event(&now).unwrap();
+        assert_eq!(next, now + chrono::Duration::seconds(1));
+    }
+
+    #[test]
+    fn minutely_from_str() {
+        let value = "FREQ=MINUTELY;INTERVAL=1";
+        let frequency = Frequency::from_str(value);
+        assert!(frequency.is_ok());
+        let frequency = frequency.unwrap();
+        let now = Utc::now();
+        let next = frequency.next_event(&now).unwrap();
+        assert_eq!(next, now + chrono::Duration::minutes(1));
+    }
+
+    #[test]
+    fn hourly_from_str() {
+        let value = "FREQ=HOURLY;INTERVAL=1";
+        let frequency = Frequency::from_str(value);
+        assert!(frequency.is_ok());
+        let frequency = frequency.unwrap();
+        let now = Utc::now();
+        let next = frequency.next_event(&now).unwrap();
+        assert_eq!(next, now + chrono::Duration::hours(1));
+    }
+
+    #[test]
+    fn daily_from_str() {
+        let value = "FREQ=DAILY;INTERVAL=1";
+        let frequency = Frequency::from_str(value);
+        assert!(frequency.is_ok());
+        let frequency = frequency.unwrap();
+        let now = Utc::now();
+        let next = frequency.next_event(&now).unwrap();
+        assert_eq!(next, now + chrono::Duration::days(1));
+    }
+
+    #[test]
+    fn daily_by_time_from_str() {
+        let value = "FREQ=DAILY;INTERVAL=1;BYTIME=10:00";
+        let frequency = Frequency::from_str(value);
+        assert!(frequency.is_ok());
+        let frequency = frequency.unwrap();
+        let date = DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap();
+        let next = frequency.next_event(&date).unwrap();
+        let expected = DateTime::<Utc>::from_str("2020-01-01T10:00:00Z").unwrap();
+    }
+
 }

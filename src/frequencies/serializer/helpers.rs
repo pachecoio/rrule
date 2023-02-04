@@ -1,8 +1,8 @@
-use std::str::FromStr;
-use chrono::{Month, Weekday};
-use crate::frequencies::InvalidFrequency;
 use crate::frequencies::serializer::{MonthUtils, WeekdayUtils};
+use crate::frequencies::InvalidFrequency;
 use crate::{MonthlyDate, NthWeekday, Time};
+use chrono::{Month, Weekday};
+use std::str::FromStr;
 
 pub fn extract_frequency(s: &str) -> Option<(String, String)> {
     use regex::Regex;
@@ -244,9 +244,12 @@ fn split_key_value(pair: &regex::Match) -> Option<(String, String)> {
 
 #[cfg(test)]
 mod test_helpers {
-    use chrono::Month;
-    use crate::frequencies::serializer::helpers::{extract_frequency, extract_interval, extract_monthdays, extract_monthly_date, extract_months, extract_nth_weekdays, extract_times, extract_weekdays};
+    use crate::frequencies::serializer::helpers::{
+        extract_frequency, extract_interval, extract_monthdays, extract_monthly_date,
+        extract_months, extract_nth_weekdays, extract_times, extract_weekdays,
+    };
     use crate::frequencies::serializer::WeekdayUtils;
+    use chrono::Month;
 
     #[test]
     fn test_extract_frequency() {
@@ -467,4 +470,3 @@ mod test_helpers {
         assert!(res.is_err());
     }
 }
-

@@ -1,7 +1,6 @@
 use crate::{Frequency, NthWeekday, Time};
 use chrono::Weekday;
-use std::fmt::{Display, format, Formatter};
-use std::num::ParseIntError;
+use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use crate::frequencies::InvalidFrequency;
 
@@ -39,7 +38,7 @@ impl WeekdayUtils for Weekday {
             "SA" => Ok(Weekday::Sat),
             "SU" => Ok(Weekday::Sun),
             _ => Err(InvalidFrequency::Day {
-                message: format!("Invalid day: {}", s),
+                message: format!("Invalid day: {s}"),
             })?,
         }
     }
@@ -192,7 +191,7 @@ fn parse_daily(s: &String) -> Result<Frequency, InvalidFrequency> {
         }),
     };
 
-    let (by_time, s) = extract_times(&s)?;
+    let (by_time, _s) = extract_times(&s)?;
     Ok(Frequency::Daily { interval, by_time })
 }
 
@@ -250,7 +249,7 @@ fn extract_times(s: &str) -> Result<(Vec<Time>, String), InvalidFrequency> {
                 }),
             };
             let mut times: Vec<Time> = vec![];
-            for time in value.split(",") {
+            for time in value.split(',') {
                 match Time::from_str(time) {
                     Ok(t) => times.push(t),
                     Err(_) => return Err(InvalidFrequency::Format {
@@ -281,7 +280,7 @@ fn extract_weekdays(s: &str) -> Result<(Vec<Weekday>, String), InvalidFrequency>
                 }),
             };
             let mut weekdays: Vec<Weekday> = vec![];
-            for weekday in value.split(",") {
+            for weekday in value.split(',') {
                 match Weekday::from_str_short(weekday) {
                     Ok(w) => weekdays.push(w),
                     Err(_) => return Err(InvalidFrequency::Format {
@@ -299,7 +298,7 @@ fn extract_weekdays(s: &str) -> Result<(Vec<Weekday>, String), InvalidFrequency>
 
 fn split_key_value(pair: &regex::Match) -> Option<(String, String)> {
     let res = pair.as_str().to_string();
-    let key_value: Vec<&str> = res.split("=").collect();
+    let key_value: Vec<&str> = res.split('=').collect();
     if key_value.len() != 2 {
         return None;
     }
@@ -307,7 +306,7 @@ fn split_key_value(pair: &regex::Match) -> Option<(String, String)> {
     if value == ";" {
         return None;
     }
-    Some((key_value[0].to_string(), value.replace(";", "")))
+    Some((key_value[0].to_string(), value.replace(';', "")))
 }
 
 #[cfg(test)]

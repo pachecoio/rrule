@@ -1,3 +1,5 @@
+extern crate core;
+
 mod frequencies;
 mod recurrences;
 mod utils;

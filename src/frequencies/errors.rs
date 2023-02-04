@@ -16,7 +16,7 @@ impl Display for InvalidFrequency {
             }
             InvalidFrequency::Time { message } => write!(f, "Invalid time: {message}"),
             InvalidFrequency::Day { message } => write!(f, "Invalid day: {message}"),
-            InvalidFrequency::Format { message} => write!(f, "Invalid format: {message}"),
+            InvalidFrequency::Format { message } => write!(f, "Invalid format: {message}"),
         }
     }
 }

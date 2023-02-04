@@ -112,14 +112,12 @@ impl FromStr for Time {
                     message: format!("Invalid time: {time_str}"),
                 })
             }
-            Some(hour) => {
-                match hour.parse::<i32>() {
-                    Ok(hour) => hour,
-                    Err(_) => {
-                        return Err(InvalidFrequency::Time {
-                            message: format!("Invalid time: {time_str}"),
-                        })
-                    }
+            Some(hour) => match hour.parse::<i32>() {
+                Ok(hour) => hour,
+                Err(_) => {
+                    return Err(InvalidFrequency::Time {
+                        message: format!("Invalid time: {time_str}"),
+                    })
                 }
             },
         };
@@ -129,14 +127,12 @@ impl FromStr for Time {
                     message: format!("Invalid time: {time_str}"),
                 })
             }
-            Some(minute) => {
-                match minute.parse::<i32>() {
-                    Ok(minute) => minute,
-                    Err(_) => {
-                        return Err(InvalidFrequency::Time {
-                            message: format!("Invalid time: {time_str}"),
-                        })
-                    }
+            Some(minute) => match minute.parse::<i32>() {
+                Ok(minute) => minute,
+                Err(_) => {
+                    return Err(InvalidFrequency::Time {
+                        message: format!("Invalid time: {time_str}"),
+                    })
                 }
             },
         };

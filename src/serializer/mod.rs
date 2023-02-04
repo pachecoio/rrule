@@ -1,8 +1,8 @@
+use crate::frequencies::InvalidFrequency;
 use crate::{Frequency, NthWeekday, Time};
 use chrono::Weekday;
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
-use crate::frequencies::InvalidFrequency;
 
 impl Display for Time {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -132,12 +132,13 @@ impl FromStr for Frequency {
     type Err = InvalidFrequency;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-
         let (frequency, s) = match extract_frequency(s) {
             Some(frequency) => frequency,
-            None => return Err(InvalidFrequency::Format {
-                message: format!("Cannot parse frequency from value {s}"),
-            }),
+            None => {
+                return Err(InvalidFrequency::Format {
+                    message: format!("Cannot parse frequency from value {s}"),
+                })
+            }
         };
 
         match frequency.as_ref() {
@@ -156,9 +157,11 @@ impl FromStr for Frequency {
 fn parse_secondly(s: &str) -> Result<Frequency, InvalidFrequency> {
     let (interval, _) = match extract_interval(s) {
         Some(interval) => interval,
-        None => return Err(InvalidFrequency::Format {
-            message: format!("Cannot parse interval from value {s}"),
-        }),
+        None => {
+            return Err(InvalidFrequency::Format {
+                message: format!("Cannot parse interval from value {s}"),
+            })
+        }
     };
     Ok(Frequency::Secondly { interval })
 }
@@ -166,9 +169,11 @@ fn parse_secondly(s: &str) -> Result<Frequency, InvalidFrequency> {
 fn parse_minutely(s: &String) -> Result<Frequency, InvalidFrequency> {
     let (interval, _) = match extract_interval(s) {
         Some(interval) => interval,
-        None => return Err(InvalidFrequency::Format {
-            message: format!("Cannot parse interval from value {s}"),
-        }),
+        None => {
+            return Err(InvalidFrequency::Format {
+                message: format!("Cannot parse interval from value {s}"),
+            })
+        }
     };
     Ok(Frequency::Minutely { interval })
 }
@@ -176,9 +181,11 @@ fn parse_minutely(s: &String) -> Result<Frequency, InvalidFrequency> {
 fn parse_hourly(s: &String) -> Result<Frequency, InvalidFrequency> {
     let (interval, _) = match extract_interval(s) {
         Some(interval) => interval,
-        None => return Err(InvalidFrequency::Format {
-            message: format!("Cannot parse interval from value {s}"),
-        }),
+        None => {
+            return Err(InvalidFrequency::Format {
+                message: format!("Cannot parse interval from value {s}"),
+            })
+        }
     };
     Ok(Frequency::Hourly { interval })
 }
@@ -186,9 +193,11 @@ fn parse_hourly(s: &String) -> Result<Frequency, InvalidFrequency> {
 fn parse_daily(s: &String) -> Result<Frequency, InvalidFrequency> {
     let (interval, s) = match extract_interval(s) {
         Some(interval) => interval,
-        None => return Err(InvalidFrequency::Format {
-            message: format!("Cannot parse interval from value {s}"),
-        }),
+        None => {
+            return Err(InvalidFrequency::Format {
+                message: format!("Cannot parse interval from value {s}"),
+            })
+        }
     };
 
     let (by_time, _s) = extract_times(&s)?;
@@ -198,9 +207,11 @@ fn parse_daily(s: &String) -> Result<Frequency, InvalidFrequency> {
 fn parse_weekly(s: &String) -> Result<Frequency, InvalidFrequency> {
     let (interval, s) = match extract_interval(s) {
         Some(interval) => interval,
-        None => return Err(InvalidFrequency::Format {
-            message: format!("Cannot parse interval from value {s}"),
-        }),
+        None => {
+            return Err(InvalidFrequency::Format {
+                message: format!("Cannot parse interval from value {s}"),
+            })
+        }
     };
 
     let (by_day, _) = extract_weekdays(&s)?;
@@ -214,7 +225,7 @@ fn extract_frequency(s: &str) -> Option<(String, String)> {
         Some(pair) => {
             let (key, value) = split_key_value(&pair)?;
             Some((value.clone(), s.replace(&format!("{key}={value};"), "")))
-        },
+        }
         None => None,
     }
 }
@@ -227,9 +238,9 @@ fn extract_interval(s: &str) -> Option<(i32, String)> {
             let (_, value) = split_key_value(&pair)?;
             match value.parse::<i32>() {
                 Ok(v) => Some((v, s.replace(&format!("INTERVAL={value};"), ""))),
-                Err(_) => None
+                Err(_) => None,
             }
-        },
+        }
         None => None,
     }
 }
@@ -244,21 +255,25 @@ fn extract_times(s: &str) -> Result<(Vec<Time>, String), InvalidFrequency> {
         Some(pair) => {
             let (_, value) = match split_key_value(&pair) {
                 Some(res) => res,
-                None => return Err(InvalidFrequency::Format {
-                    message: format!("Cannot parse by_time from value {s}"),
-                }),
+                None => {
+                    return Err(InvalidFrequency::Format {
+                        message: format!("Cannot parse by_time from value {s}"),
+                    })
+                }
             };
             let mut times: Vec<Time> = vec![];
             for time in value.split(',') {
                 match Time::from_str(time) {
                     Ok(t) => times.push(t),
-                    Err(_) => return Err(InvalidFrequency::Format {
-                        message: format!("Cannot parse time from value {time}"),
-                    }),
+                    Err(_) => {
+                        return Err(InvalidFrequency::Format {
+                            message: format!("Cannot parse time from value {time}"),
+                        })
+                    }
                 }
             }
             Ok((times, s.replace(&format!("BYTIME={value}"), "")))
-        },
+        }
         None => Err(InvalidFrequency::Format {
             message: format!("Cannot parse by_time from value {s}"),
         }),
@@ -275,21 +290,25 @@ fn extract_weekdays(s: &str) -> Result<(Vec<Weekday>, String), InvalidFrequency>
         Some(pair) => {
             let (_, value) = match split_key_value(&pair) {
                 Some(res) => res,
-                None => return Err(InvalidFrequency::Format {
-                    message: format!("Cannot parse by_day from value {s}"),
-                }),
+                None => {
+                    return Err(InvalidFrequency::Format {
+                        message: format!("Cannot parse by_day from value {s}"),
+                    })
+                }
             };
             let mut weekdays: Vec<Weekday> = vec![];
             for weekday in value.split(',') {
                 match Weekday::from_str_short(weekday) {
                     Ok(w) => weekdays.push(w),
-                    Err(_) => return Err(InvalidFrequency::Format {
-                        message: format!("Cannot parse weekday from value {weekday}"),
-                    }),
+                    Err(_) => {
+                        return Err(InvalidFrequency::Format {
+                            message: format!("Cannot parse weekday from value {weekday}"),
+                        })
+                    }
                 }
             }
             Ok((weekdays, s.replace(&format!("BYDAY={value}"), "")))
-        },
+        }
         None => Err(InvalidFrequency::Format {
             message: format!("Cannot parse by_day from value {s}"),
         }),
@@ -482,7 +501,9 @@ mod test_serialize {
 
 #[cfg(test)]
 mod test_helpers {
-    use crate::serializer::{extract_frequency, extract_interval, extract_times, extract_weekdays, WeekdayUtils};
+    use crate::serializer::{
+        extract_frequency, extract_interval, extract_times, extract_weekdays, WeekdayUtils,
+    };
 
     #[test]
     fn test_extract_frequency() {
@@ -604,10 +625,10 @@ mod test_helpers {
 
 #[cfg(test)]
 mod test_deserialize_from_str {
-    use std::str::FromStr;
-    use chrono::{DateTime, Utc};
     use crate::frequencies::InvalidFrequency;
     use crate::Frequency;
+    use chrono::{DateTime, Utc};
+    use std::str::FromStr;
 
     #[test]
     fn test_invalid_format() {
@@ -615,7 +636,10 @@ mod test_deserialize_from_str {
         let frequency = Frequency::from_str(value);
         assert!(frequency.is_err());
         let message = frequency.unwrap_err().to_string();
-        assert_eq!(message, "Invalid format: Cannot parse frequency from value blabla");
+        assert_eq!(
+            message,
+            "Invalid format: Cannot parse frequency from value blabla"
+        );
     }
 
     #[test]
@@ -702,5 +726,4 @@ mod test_deserialize_from_str {
         let expected = DateTime::<Utc>::from_str("2020-01-06T00:00:00Z").unwrap();
         assert_eq!(next, expected);
     }
-
 }

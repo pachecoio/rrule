@@ -1,6 +1,6 @@
 use crate::frequencies::InvalidFrequency;
-use crate::{Frequency, NthWeekday, Time};
-use chrono::Weekday;
+use crate::{Frequency, MonthlyDate, NthWeekday, Time};
+use chrono::{Month, Weekday};
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 
@@ -148,6 +148,7 @@ impl FromStr for Frequency {
             "DAILY" => parse_daily(&s),
             "WEEKLY" => parse_weekly(&s),
             "MONTHLY" => parse_monthly(&s),
+            "YEARLY" => parse_yearly(&s),
             _ => Err(InvalidFrequency::Format {
                 message: format!("Frequency {frequency} is not supported"),
             }),
@@ -187,6 +188,73 @@ impl FromStr for NthWeekday {
                     message: format!("Cannot parse nth weekday from value {s}"),
                 })
             }
+        }
+    }
+}
+
+impl FromStr for MonthlyDate {
+    type Err = InvalidFrequency;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        use regex::Regex;
+        let re = Regex::new(r"^(?P<month>[A-Z]{3})(?P<day>\d+)$").unwrap();
+        match re.captures(s) {
+            Some(captures) => {
+                let month_number = match captures
+                    .name("month")
+                    .unwrap()
+                    .as_str()
+                    .parse::<i32>()
+                {
+                    Ok(month_number) => month_number,
+                    Err(_) => {
+                        return Err(InvalidFrequency::Format {
+                            message: format!("Cannot parse month number from value {s}"),
+                        })
+                    }
+                };
+                let month = Month::from_i32(month_number)?;
+                let day = match captures.name("day").unwrap().as_str().parse::<u8>() {
+                    Ok(day) => day,
+                    Err(_) => {
+                        return Err(InvalidFrequency::Format {
+                            message: format!("Cannot parse day from value {s}"),
+                        })
+                    }
+                };
+                Ok(MonthlyDate { month, day: day.into() })
+            }
+            None => {
+                return Err(InvalidFrequency::Format {
+                    message: format!("Cannot parse monthly date from value {s}"),
+                })
+            }
+        }
+    }
+}
+
+trait MonthUtils {
+    fn from_i32(month: i32) -> Result<Month, InvalidFrequency>;
+}
+
+impl MonthUtils for Month {
+    fn from_i32(month: i32) -> Result<Month, InvalidFrequency> {
+        match month {
+            1 => Ok(Month::January),
+            2 => Ok(Month::February),
+            3 => Ok(Month::March),
+            4 => Ok(Month::April),
+            5 => Ok(Month::May),
+            6 => Ok(Month::June),
+            7 => Ok(Month::July),
+            8 => Ok(Month::August),
+            9 => Ok(Month::September),
+            10 => Ok(Month::October),
+            11 => Ok(Month::November),
+            12 => Ok(Month::December),
+            _ => Err(InvalidFrequency::Format {
+                message: format!("Cannot parse month from value {month}"),
+            }),
         }
     }
 }
@@ -272,6 +340,24 @@ fn parse_monthly(s: &String) -> Result<Frequency, InvalidFrequency> {
         interval,
         by_month_day,
         nth_weekdays,
+    })
+}
+
+fn parse_yearly(s: &String) -> Result<Frequency, InvalidFrequency> {
+    let (interval, s) = match extract_interval(s) {
+        Some(interval) => interval,
+        None => {
+            return Err(InvalidFrequency::Format {
+                message: format!("Cannot parse interval from value {s}"),
+            })
+        }
+    };
+
+    let (by_monthly_date, _) = extract_monthly_date(&s)?;
+
+    Ok(Frequency::Yearly {
+        interval,
+        by_monthly_date
     })
 }
 
@@ -440,6 +526,61 @@ fn extract_nth_weekdays(s: &str) -> Result<(Vec<NthWeekday>, String), InvalidFre
             message: format!("Cannot parse by_day from value {s}"),
         }),
     }
+}
+
+fn extract_months(s: &str) -> Result<(Vec<Month>, String), InvalidFrequency> {
+    use regex::Regex;
+    if !s.contains("BYMONTH") {
+        return Ok((vec![], s.to_string()));
+    }
+    let re = Regex::new(r"BYMONTH=[0-9|,]*").unwrap();
+    match re.find(s) {
+        Some(pair) => {
+            let (_, value) = match split_key_value(&pair) {
+                Some(res) => res,
+                None => {
+                    return Err(InvalidFrequency::Format {
+                        message: format!("Cannot parse by_month from value {s}"),
+                    })
+                }
+            };
+            let mut months: Vec<Month> = vec![];
+            for month in value.split(',') {
+                match month.parse::<i32>() {
+                    Ok(m) => months.push(Month::from_i32(m)?),
+                    Err(_) => {
+                        return Err(InvalidFrequency::Format {
+                            message: format!("Cannot parse month from value {month}"),
+                        })
+                    }
+                }
+            }
+            Ok((months, s.replace(&format!("BYMONTH={value}"), "")))
+        }
+        None => Err(InvalidFrequency::Format {
+            message: format!("Cannot parse by_month from value {s}"),
+        }),
+    }
+}
+
+fn extract_monthly_date(s: &str) -> Result<(Option<MonthlyDate>, String), InvalidFrequency> {
+    if !s.contains("BYMONTHDAY") && !s.contains("BYMONTH") {
+        return Ok((None, s.to_string()));
+    }
+    let (days, s) = extract_monthdays(s)?;
+    if days.len() != 1 {
+        return Err(InvalidFrequency::Format {
+            message: format!("Cannot parse monthly_date from value {s}"),
+        });
+    }
+    let (months, s) = extract_months(&s)?;
+    if months.len() != 1 {
+        return Err(InvalidFrequency::Format {
+            message: format!("Cannot parse monthly_date from value {s}"),
+        });
+    }
+    let monthly_date = MonthlyDate { day: days[0], month: months[0] };
+    Ok((Some(monthly_date), s))
 }
 
 fn split_key_value(pair: &regex::Match) -> Option<(String, String)> {
@@ -628,10 +769,8 @@ mod test_serialize {
 
 #[cfg(test)]
 mod test_helpers {
-    use crate::serializer::{
-        extract_frequency, extract_interval, extract_monthdays, extract_nth_weekdays,
-        extract_times, extract_weekdays, WeekdayUtils,
-    };
+    use chrono::Month;
+    use crate::serializer::{extract_frequency, extract_interval, extract_monthdays, extract_monthly_date, extract_months, extract_nth_weekdays, extract_times, extract_weekdays, WeekdayUtils};
 
     #[test]
     fn test_extract_frequency() {
@@ -793,6 +932,64 @@ mod test_helpers {
         let res = extract_nth_weekdays(&value);
         assert!(res.is_err());
     }
+
+    #[test]
+    fn test_extract_months() {
+        let value = "FREQ=YEARLY;INTERVAL=1;BYMONTH=1,2";
+        let (months, remainder) = extract_months(&value).unwrap();
+        assert_eq!(months.len(), 2);
+    }
+
+    #[test]
+    fn test_extract_months_empty() {
+        let value = "FREQ=YEARLY;INTERVAL=1;BYMONTH=";
+        let res = extract_months(&value);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_extract_months_invalid() {
+        let value = "FREQ=YEARLY;INTERVAL=1;BYMONTH=INVALID";
+        let res = extract_months(&value);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_extract_months_not_present() {
+        let value = "FREQ=YEARLY;INTERVAL=1";
+        let (months, _) = extract_months(&value).unwrap();
+        assert_eq!(months.len(), 0);
+    }
+
+    #[test]
+    fn test_extract_yearly_month_date() {
+        let value = "FREQ=YEARLY;INTERVAL=1;BYMONTH=1;BYMONTHDAY=1";
+        let (monthly_date, remainder) = extract_monthly_date(&value).unwrap();
+        let monthly_date = monthly_date.unwrap();
+        assert_eq!(monthly_date.day, 1);
+        assert_eq!(monthly_date.month, Month::January);
+    }
+
+    #[test]
+    fn test_extract_yearly_month_date_empty() {
+        let value = "FREQ=YEARLY;INTERVAL=1;BYMONTH=1;BYMONTHDAY=";
+        let res = extract_monthly_date(&value);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_extract_yearly_month_date_invalid() {
+        let value = "FREQ=YEARLY;INTERVAL=1;BYMONTH=1;BYMONTHDAY=INVALID";
+        let res = extract_monthly_date(&value);
+        assert!(res.is_err());
+    }
+
+    #[test]
+    fn test_extract_yearly_month_date_not_present() {
+        let value = "FREQ=YEARLY;INTERVAL=1;BYMONTH=1";
+        let res = extract_monthly_date(&value);
+        assert!(res.is_err());
+    }
 }
 
 #[cfg(test)]
@@ -937,6 +1134,31 @@ mod test_deserialize_from_str {
         let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
         let next = frequency.next_event(&date).unwrap();
         let expected = DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap();
+        assert_eq!(next, expected);
+    }
+
+    #[test]
+    fn yearly_from_str() {
+        let value = "FREQ=YEARLY;INTERVAL=1";
+        let frequency = Frequency::from_str(value);
+        assert!(frequency.is_ok());
+        let frequency = frequency.unwrap();
+        assert_eq!(frequency.to_string(), "FREQ=YEARLY;INTERVAL=1");
+        let date = DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap();
+        let next = frequency.next_event(&date).unwrap();
+        let expected = DateTime::<Utc>::from_str("2021-01-01T00:00:00Z").unwrap();
+        assert_eq!(next, expected);
+    }
+
+    #[test]
+    fn yearly_by_monthday_from_str() {
+        let value = "FREQ=YEARLY;INTERVAL=1;BYMONTHDAY=15;BYMONTH=1";
+        let frequency = Frequency::from_str(value);
+        assert!(frequency.is_ok());
+        let frequency = frequency.unwrap();
+        let date = DateTime::<Utc>::from_str("2020-01-01T00:00:00Z").unwrap();
+        let next = frequency.next_event(&date).unwrap();
+        let expected = DateTime::<Utc>::from_str("2020-01-15T00:00:00Z").unwrap();
         assert_eq!(next, expected);
     }
 }

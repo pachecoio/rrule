@@ -72,7 +72,7 @@ impl Recurrence {
         }
         validate_recurrence_period(&start, &end)?;
 
-        let duration = duration.unwrap_or_else(|| Duration::hours(1));
+        let duration = duration.unwrap_or_else(|| Duration::seconds(0));
         validate_duration(&frequency, &duration)?;
         Ok(Recurrence {
             frequency,

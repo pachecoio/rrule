@@ -66,8 +66,9 @@ let recurrence = Recurrence::new(
 The `end` attribute of a `Recurrence` is optional, and if not specified, it will yield events until the `MAX_DATE`.
 > The `MAX_DATE` is defined as `9999-12-31T23:59:59Z`
 
+The `duration` attribute of a `Recurrence` is optional, and if not specified, it will use the default as 1 hour `Duration::seconds(0)`.
 
-The `duration` attribute of a `Recurrence` is optional, and if not specified, it will use the default as 1 hour `Duration::hours(1)`.
+## Attribute standards
 
 ## Supported frequencies
 Current supporting recurrence rules:

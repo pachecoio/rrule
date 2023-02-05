@@ -1,8 +1,8 @@
-name: Check publishing library
+name: Publish library
 
 on:
-  pull_request:
-    branches: [ "main" ]
+  release:
+    types: [created]
 
 jobs:
   check-publish:
@@ -19,6 +19,6 @@ jobs:
           toolchain: stable
           override: true
 
-      - run: cargo publish --token ${CRATES_TOKEN} --dry-run
+      - run: cargo publish --token ${CRATES_TOKEN}
         env:
           CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}

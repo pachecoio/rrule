@@ -5,6 +5,7 @@ pub enum InvalidFrequency {
     Interval { message: String },
     Time { message: String },
     Day { message: String },
+    Format { message: String },
 }
 
 impl Display for InvalidFrequency {
@@ -15,6 +16,7 @@ impl Display for InvalidFrequency {
             }
             InvalidFrequency::Time { message } => write!(f, "Invalid time: {message}"),
             InvalidFrequency::Day { message } => write!(f, "Invalid day: {message}"),
+            InvalidFrequency::Format { message } => write!(f, "Invalid format: {message}"),
         }
     }
 }

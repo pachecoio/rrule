@@ -1,6 +1,7 @@
+extern crate core;
+
 mod frequencies;
 mod recurrences;
-mod serializer;
 mod utils;
 
 pub use frequencies::{Frequency, MonthlyDate, NthWeekday, Time};

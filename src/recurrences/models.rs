@@ -4,7 +4,7 @@ use crate::recurrences::validations::{validate_duration, validate_recurrence_per
 use chrono::{DateTime, Duration, Utc};
 use std::str::FromStr;
 
-const MAX_DATE: &str = "9999-12-31T23:59:59Z";
+pub const MAX_DATE: &str = "9999-12-31T23:59:59Z";
 
 /// An Iterator-type struct that represents a recurrence of events.
 /// It can be used to collect/iterate over all the events that match the recurrence rules
@@ -14,17 +14,10 @@ const MAX_DATE: &str = "9999-12-31T23:59:59Z";
 /// ```
 /// use std::str::FromStr;
 /// use chrono::{DateTime, Utc};
-/// use rrules::{Recurrence, Frequency};
+/// use rrules::Recurrence;
 ///
-/// let once_a_day = Frequency::Daily {interval: 1, by_time: vec![]};
-/// let start_date = DateTime::<Utc>::from_str("2023-01-01T12:00:00Z").unwrap();
-/// let end_date = DateTime::<Utc>::from_str("2023-01-03T23:59:00Z").unwrap();
-///
-/// let everyday_during_first_3_days_of_january = Recurrence::new(
-///     once_a_day,
-///     start_date,
-///     Some(end_date),
-///     None
+/// let everyday_during_first_3_days_of_january = Recurrence::from_str(
+///    "FREQ=DAILY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z;DTEND=2023-01-03T23:59:00Z"
 /// );
 /// let events: Vec<DateTime<Utc>> = everyday_during_first_3_days_of_january
 ///     .unwrap()
@@ -56,15 +49,14 @@ impl Recurrence {
     /// Returns an error if the recurrence rules are invalid.
     /// Examples:
     /// ```
+    /// use std::str::FromStr;
     /// use rrules::{Recurrence, Frequency};
     ///
-    /// let invalid_frequency = Frequency::Daily {interval: 0, by_time: vec![]};
-    /// let recurrence = Recurrence::new(invalid_frequency, chrono::Utc::now(), None, None);
-    /// assert!(recurrence.is_err());
+    /// let invalid_recurrence = Recurrence::from_str("INVALID");
+    /// assert!(invalid_recurrence.is_err());
     ///
-    /// let valid_frequency = Frequency::Daily {interval: 1, by_time: vec![]};
-    /// let recurrence = Recurrence::new(valid_frequency, chrono::Utc::now(), None, None);
-    /// assert!(recurrence.is_ok());
+    /// let valid_recurrence = Recurrence::from_str("FREQ=DAILY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z");
+    /// assert!(valid_recurrence.is_ok());
     /// ```
     pub fn new(
         frequency: Frequency,
@@ -80,7 +72,7 @@ impl Recurrence {
         }
         validate_recurrence_period(&start, &end)?;
 
-        let duration = duration.unwrap_or_else(|| Duration::hours(1));
+        let duration = duration.unwrap_or_else(|| Duration::seconds(0));
         validate_duration(&frequency, &duration)?;
         Ok(Recurrence {
             frequency,
@@ -99,19 +91,16 @@ impl Iterator for Recurrence {
     /// Returns None if there are no more events in the recurrence.
     /// Examples:
     /// ```
-    /// use chrono::DateTime;
+    /// use std::str::FromStr;
+    /// use chrono::{DateTime, Utc};
     /// use rrules::{Recurrence, Frequency};
     ///
-    /// let once_a_day = Frequency::Daily {interval: 1, by_time: vec![]};
-    /// let start_date = chrono::Utc::now();
-    /// let end_date = start_date + chrono::Duration::days(2);
-    ///
-    /// let mut  recurrence = Recurrence::new(once_a_day, start_date, Some(end_date), None).unwrap();
+    /// let mut recurrence = Recurrence::from_str("FREQ=DAILY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z").unwrap();
     /// let first_event = recurrence.next().unwrap();
-    /// assert_eq!(first_event, start_date);
+    /// assert_eq!(first_event, DateTime::<Utc>::from_str("2023-01-01T12:00:00Z").unwrap());
     ///
     /// let second_event = recurrence.next().unwrap();
-    /// assert_eq!(second_event, start_date + chrono::Duration::days(1));
+    /// assert_eq!(second_event, DateTime::<Utc>::from_str("2023-01-02T12:00:00Z").unwrap());
     /// ```
     fn next(&mut self) -> Option<Self::Item> {
         let current_date = match self.current_date {

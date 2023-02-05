@@ -1,6 +1,6 @@
-use std::str::FromStr;
-use chrono::{DateTime, Duration, Utc};
 use crate::RecurrenceInvalid;
+use chrono::{DateTime, Duration, Utc};
+use std::str::FromStr;
 
 pub fn extract_start_date(s: &str) -> Result<DateTime<Utc>, RecurrenceInvalid> {
     use regex::Regex;
@@ -128,9 +128,9 @@ fn parse_duration_pair<'a>(caps: &'a regex::Captures, key: &'a str) -> &'a str {
 
 #[cfg(test)]
 mod test_helpers {
+    use crate::recurrences::serializers::helpers::{extract_duration, extract_start_date};
     use chrono::{DateTime, Duration, Utc};
     use std::str::FromStr;
-    use crate::recurrences::serializers::helpers::{extract_duration, extract_start_date};
 
     #[test]
     fn test_extract_start() {

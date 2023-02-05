@@ -37,7 +37,7 @@ impl Display for Recurrence {
         if self.duration > Duration::seconds(0) {
             res = format!("{};DURATION={}", res, self.duration);
         }
-        write!(f, "{}", res)
+        write!(f, "{res}")
     }
 }
 
@@ -66,7 +66,7 @@ pub fn extract_end_date(s: &str) -> Result<Option<DateTime<Utc>>, RecurrenceInva
         message: "No DTEND found".to_string(),
     }) {
         Ok(caps) => caps,
-        Err(e) => return Ok(None),
+        Err(_) => return Ok(None),
     };
     let date = caps.name("date").ok_or(RecurrenceInvalid {
         message: "No date found".to_string(),

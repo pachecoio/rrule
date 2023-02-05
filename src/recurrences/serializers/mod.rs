@@ -1,8 +1,8 @@
-use std::fmt::{Display, Formatter};
+use crate::recurrences::MAX_DATE;
 use crate::{Frequency, Recurrence, RecurrenceInvalid};
 use chrono::{DateTime, Duration, Utc};
+use std::fmt::{Display, Formatter};
 use std::str::FromStr;
-use crate::recurrences::MAX_DATE;
 
 impl FromStr for Recurrence {
     type Err = RecurrenceInvalid;
@@ -456,8 +456,8 @@ mod deserialize_tests {
 
 #[cfg(test)]
 mod serialize_tests {
-    use std::str::FromStr;
     use crate::Recurrence;
+    use std::str::FromStr;
 
     #[test]
     fn secondly_to_str() {
@@ -469,7 +469,8 @@ mod serialize_tests {
 
     #[test]
     fn second_to_str_with_end_date() {
-        let value = "FREQ=SECONDLY;INTERVAL=1;DTSTART=2023-01-01T00:00:00Z;DTEND=2023-01-02T00:00:00Z";
+        let value =
+            "FREQ=SECONDLY;INTERVAL=1;DTSTART=2023-01-01T00:00:00Z;DTEND=2023-01-02T00:00:00Z";
         let recurrence = Recurrence::from_str(value).unwrap();
         let serialized = recurrence.to_string();
         assert_eq!(serialized, value);

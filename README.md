@@ -70,7 +70,19 @@ The `duration` attribute of a `Recurrence` is optional, and if not specified, it
 
 ## Attribute standards
 
-## Supported frequencies
+| Attribute  | Description                                                                                                    | Example                                                             |
+|------------|----------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
+| FREQ       | Defines the type of frequency (E.g. DAILY, WEEKLY, MONTHLY, etc)                                               | FREQ=DAILY                                                          |
+| INTERVAL   | Defines the interval of the frequency (E.g. every 2 days, every 3 months, etc)                                 | INTERVAL=2                                                          |
+| DTSTART    | Defines the start date of the recurrence                                                                       | DTSTART=2023-01-01T12:00:00Z                                        |
+| DTEND      | Defines the end date of the recurrence                                                                         | DTEND=2023-01-01T12:00:00Z                                          |
+| DURATION   | Defines the duration of the recurrence                                                                         | DURATION=PT1H                                                       |
+| BYDAY      | Defines the days of the week that the recurrence will happen                                                   | BYDAY=MO,TU -> When FREQ=WEEKLY; BYDAY=1MO,3WE -> When FREQ=MONTHLY |
+| BYMONTHDAY | Defines the days of the month that the recurrence will happen                                                  | BYMONTHDAY=1,2,3,4, etc                                             |
+| BYMONTH    | Defines the months of the year that the recurrence will happen                                                 | BYMONTH=1,2,3,4,5,6,7,8,9,10,11,12                                  |
+
+
+## Supported recurrence rule types + examples
 Current supporting recurrence rules:
 
 - [Secondly](#secondly)

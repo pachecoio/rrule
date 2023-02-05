@@ -239,6 +239,13 @@ mod deserialize_tests {
             ]
         );
     }
+
+    #[test]
+    fn daily_invalid_end_date() {
+        let value = "FREQ=DAILY;INTERVAL=1;DTSTART=2023-01-01T00:00:00Z;DTEND=2023-01-01T00:00:00Z";
+        let recurrence = Recurrence::from_str(value);
+        assert!(recurrence.is_err());
+    }
 }
 
 #[cfg(test)]

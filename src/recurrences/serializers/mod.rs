@@ -1,6 +1,8 @@
+use std::fmt::{Display, Formatter};
 use crate::{Frequency, Recurrence, RecurrenceInvalid};
 use chrono::{DateTime, Duration, Utc};
 use std::str::FromStr;
+use crate::recurrences::MAX_DATE;
 
 impl FromStr for Recurrence {
     type Err = RecurrenceInvalid;
@@ -15,9 +17,27 @@ impl FromStr for Recurrence {
             }
         };
         let start_date = extract_start_date(s)?;
-        let end_date = None;
+        let end_date = extract_end_date(s)?;
         let duration = extract_duration(s)?;
         Recurrence::new(frequency, start_date, end_date, Some(duration))
+    }
+}
+
+impl Display for Recurrence {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let mut res = format!(
+            "{};DTSTART={}",
+            self.frequency,
+            self.start.format("%Y-%m-%dT%H:%M:%SZ"),
+        );
+        let max_date = DateTime::<Utc>::from_str(MAX_DATE).unwrap();
+        if self.end != max_date {
+            res = format!("{};DTEND={}", res, self.end.format("%Y-%m-%dT%H:%M:%SZ"));
+        }
+        if self.duration > Duration::seconds(0) {
+            res = format!("{};DURATION={}", res, self.duration);
+        }
+        write!(f, "{}", res)
     }
 }
 
@@ -36,6 +56,25 @@ pub fn extract_start_date(s: &str) -> Result<DateTime<Utc>, RecurrenceInvalid> {
         message: format!("Invalid date: {e}"),
     })?;
     Ok(date)
+}
+
+pub fn extract_end_date(s: &str) -> Result<Option<DateTime<Utc>>, RecurrenceInvalid> {
+    use regex::Regex;
+    let re = Regex::new(r"DTEND=(?P<date>[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z)")
+        .unwrap();
+    let caps = match re.captures(s).ok_or(RecurrenceInvalid {
+        message: "No DTEND found".to_string(),
+    }) {
+        Ok(caps) => caps,
+        Err(e) => return Ok(None),
+    };
+    let date = caps.name("date").ok_or(RecurrenceInvalid {
+        message: "No date found".to_string(),
+    })?;
+    let date = DateTime::<Utc>::from_str(date.as_str()).map_err(|e| RecurrenceInvalid {
+        message: format!("Invalid date: {e}"),
+    })?;
+    Ok(Some(date))
 }
 
 fn extract_duration(s: &str) -> Result<Duration, RecurrenceInvalid> {
@@ -397,5 +436,50 @@ mod deserialize_tests {
                 DateTime::<Utc>::from_str("2024-01-15T00:00:00Z").unwrap(),
             ]
         );
+    }
+
+    #[test]
+    fn daily_with_dt_end() {
+        let value = "FREQ=DAILY;INTERVAL=1;DTSTART=2023-01-01T00:00:00Z;DTEND=2023-01-03T00:00:00Z";
+        let recurrence = Recurrence::from_str(value).unwrap();
+        let events = recurrence.take(5).collect::<Vec<DateTime<Utc>>>();
+        assert_eq!(
+            events,
+            vec![
+                DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2023-01-02T00:00:00Z").unwrap(),
+                DateTime::<Utc>::from_str("2023-01-03T00:00:00Z").unwrap(),
+            ]
+        );
+    }
+}
+
+#[cfg(test)]
+mod serialize_tests {
+    use std::str::FromStr;
+    use crate::Recurrence;
+
+    #[test]
+    fn secondly_to_str() {
+        let value = "FREQ=SECONDLY;INTERVAL=1;DTSTART=2023-01-01T00:00:00Z";
+        let recurrence = Recurrence::from_str(value).unwrap();
+        let serialized = recurrence.to_string();
+        assert_eq!(serialized, value);
+    }
+
+    #[test]
+    fn second_to_str_with_end_date() {
+        let value = "FREQ=SECONDLY;INTERVAL=1;DTSTART=2023-01-01T00:00:00Z;DTEND=2023-01-02T00:00:00Z";
+        let recurrence = Recurrence::from_str(value).unwrap();
+        let serialized = recurrence.to_string();
+        assert_eq!(serialized, value);
+    }
+
+    #[test]
+    fn minutely_to_str() {
+        let value = "FREQ=MINUTELY;INTERVAL=1;DTSTART=2023-01-01T00:00:00Z";
+        let recurrence = Recurrence::from_str(value).unwrap();
+        let serialized = recurrence.to_string();
+        assert_eq!(serialized, value);
     }
 }

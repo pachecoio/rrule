@@ -4,7 +4,7 @@ use crate::recurrences::validations::{validate_duration, validate_recurrence_per
 use chrono::{DateTime, Duration, Utc};
 use std::str::FromStr;
 
-const MAX_DATE: &str = "9999-12-31T23:59:59Z";
+pub const MAX_DATE: &str = "9999-12-31T23:59:59Z";
 
 /// An Iterator-type struct that represents a recurrence of events.
 /// It can be used to collect/iterate over all the events that match the recurrence rules

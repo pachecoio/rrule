@@ -27,7 +27,7 @@ use std::str::FromStr;
 /// };
 /// assert_eq!(three_times_a_month.to_string(), "FREQ=MONTHLY;INTERVAL=1;BYMONTHDAY=1,10,20");
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Frequency {
     Secondly {
         interval: i32,
@@ -142,7 +142,7 @@ impl FromStr for Time {
 
 /// Representation of a monthly date
 /// E.g. 1st of January, 2nd of February, etc.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MonthlyDate {
     pub month: Month,
     pub day: i32,

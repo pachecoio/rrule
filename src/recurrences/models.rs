@@ -25,6 +25,7 @@ pub const MAX_DATE: &str = "9999-12-31T23:59:59Z";
 /// assert_eq!(events.len(), 3);
 ///
 /// ```
+#[derive(Debug, Clone)]
 pub struct Recurrence {
     /// Represents the frequency rules of the recurrence
     pub frequency: Frequency,

@@ -16,3 +16,6 @@ readme = "README.md"
 [dependencies]
 chrono = "0.4.23"
 regex = "1.7.1"
+
+[dev-dependencies]
+cargo-sonar = "0.14.1"

@@ -5,9 +5,23 @@ on:
   pull_request:
     types: ["opened", "synchronize", "reopened"]
 jobs:
+  generate-clippy-reports:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Generate clippy reports
+        run: cargo clippy --message-format=json > clippy.json
+  generate-sonarcloud-reports:
+    runs-on: ubuntu-latest
+    needs: generate-clippy-reports
+    steps:
+      - uses: actions/checkout@v3
+      - name: Generate sonarcloud reports
+        run: cargo sonar --issues clippy --clippy-path clippy.json
   sonarcloud:
     name: check
     runs-on: ubuntu-latest
+    needs: generate-sonarcloud-reports
     steps:
       - uses: actions/checkout@v2
         with:

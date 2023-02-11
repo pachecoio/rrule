@@ -69,9 +69,9 @@ mod minutely_frequency {
     #[test]
     fn every_minute_collect_events() {
         let f = Frequency::Minutely { interval: 1 };
-        let now = Utc::now();
-        let next_event = f.next_event(&now);
-        assert_eq!(next_event.unwrap().minute(), now.minute() + 1);
+        let date = DateTime::<Utc>::from_str("2023-01-01T00:00:00Z").unwrap();
+        let next_event = f.next_event(&date);
+        assert_eq!(next_event.unwrap().minute(), date.minute() + 1);
     }
 
     #[test]

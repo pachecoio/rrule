@@ -1,15 +1,17 @@
-# RRules
+# rrules
+
+## RRules
 
 A blazing fast and memory efficient library to manage recurrence rules inspired by the standards from [RFC-5547](https://icalendar.org/iCalendar-RFC-5545/3-3-10-recurrence-rule.html).
 It provides the ability to define recurrence rules for events, and then iterate over them to get the dates that match the recurrence rules.
 
-## How to use it
+### How to use it
 
 The easiest way to use this library is to start by loading a Recurrence instance from a string following the [standards](#standards):
 
-### Loading from string
+#### Loading from string
 
-#### Required attributes:
+##### Required attributes:
 
 - FREQ
   - Defines the type of frequency (E.g. DAILY, WEEKLY, MONTHLY, etc)
@@ -23,38 +25,41 @@ Examples:
 ```rust
 // Daily recurrence example:
 
-let recurrence = Recurrence::from_str("FREQ=DAILY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z"").unwrap();
+use std::str::FromStr;
+use chrono::{DateTime, Utc};
+use rrules::Recurrence;
+
+let recurrence = Recurrence::from_str("FREQ=DAILY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z").unwrap();
+
+// You can then use the `Recurrence` as an iterator by looping over it or collecting the results into a `Vec`
+
+for event in recurrence.clone().take(100) { // cloning to avoid moving the iterator
+    // ...
+}
+// or
+let events: Vec<DateTime<Utc>> = recurrence.take(100).collect();
 
 ```
 
 > The `Recurrence` struct is an iterator that will yield all the dates that match the recurrence rules defined.
 
-You can then use the `Recurrence` as an iterator by looping over it or collecting the results into a `Vec`
 
-```rust
-...
-for event in recurrence {
-    ...
-}
-# or
-let events: Vec<DateTime<Utc>> = recurrence.collect();
-```
-
-### How to use it with structs definition
+#### How to use it with structs definition
 
 To define a recurrence rule, start by creating the desired `frequency` rule definition:
 
 ```rust
+use chrono::{Duration, Utc};
+use rrules::Frequency;
+use rrules::Recurrence;
+
 let daily = Frequency::Daily {
     interval: 1,
     by_time: vec![],
 };
-```
 
-Then, create a `Recurrence` with the frequency defined:
+// Then, create a `Recurrence` with the frequency defined:
 
-```rust
-...
 let recurrence = Recurrence::new(
     daily,
     Utc::now(), // start date
@@ -69,7 +74,7 @@ The `end` attribute of a `Recurrence` is optional, and if not specified, it will
 The `duration` attribute of a `Recurrence` is optional, and if not specified, it will use the default as 0 seconds `Duration::seconds(0)`.
 
 <span id="standards"></span>
-## Attribute standards
+### Attribute standards
 
 | Attribute  | Description                                                                                                    | Example                                                             |
 |------------|----------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
@@ -83,7 +88,7 @@ The `duration` attribute of a `Recurrence` is optional, and if not specified, it
 | BYMONTH    | Defines the months of the year that the recurrence will happen                                                 | BYMONTH=1,2,3,4,5,6,7,8,9,10,11,12                                  |
 
 
-## Supported recurrence rule types + examples
+### Supported recurrence rule types + examples
 Current supporting recurrence rules:
 
 - [Secondly](#secondly)
@@ -100,40 +105,51 @@ Current supporting recurrence rules:
 
 
 <span id="secondly"></span>
-### Secondly Frequencies
+#### Secondly Frequencies
 Represents the rules for a recurrence that happens every x seconds.
 
 ```rust
+use std::str::FromStr;
+use rrules::Recurrence;
+
 let every_second_recurrence = Recurrence::from_str(
     "FREQ=SECONDLY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z"
 ).unwrap();
 ```
 
 <span id="minutely"></span>
-### Minutely Frequencies
+#### Minutely Frequencies
 Represents the rules for a recurrence that happens every x minutes.
 
 ```rust
+use std::str::FromStr;
+use rrules::Recurrence;
+
 let every_5_minutes = Recurrence::from_str(
     "FREQ=MINUTELY;INTERVAL=5;DTSTART=2023-01-01T12:00:00Z"
 ).unwrap();
 ```
 
 <span id="hourly"></span>
-### Hourly Frequencies
+#### Hourly Frequencies
 Represents the rules for a recurrence that happens every x hours.
 
 ```rust
+use std::str::FromStr;
+use rrules::Recurrence;
+
 let every_6_hours = Recurrence::from_str(
     "FREQ=HOURLY;INTERVAL=6;DTSTART=2023-01-01T12:00:00Z"
 ).unwrap();
 ```
 
 <span id="daily"></span>
-### Daily Frequencies
+#### Daily Frequencies
 Represents the rules for a recurrence that happens x times every x days.
 
 ```rust
+use std::str::FromStr;
+use rrules::Recurrence;
 
 let every_3_days = Recurrence::from_str(
     "FREQ=DAILY;INTERVAL=3;DTSTART=2023-01-01T12:00:00Z"
@@ -149,10 +165,13 @@ let every_other_day_at_12pm_and_16pm = Recurrence::from_str(
 ```
 
 <span id="weekly"></span>
-### Weekly Frequencies
+#### Weekly Frequencies
 Represents the rules for a recurrence that happens x times every x weeks.
 
 ```rust
+use std::str::FromStr;
+use rrules::Recurrence;
+
 let every_week = Recurrence::from_str(
     "FREQ=WEEKLY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z"
 ).unwrap();
@@ -162,37 +181,43 @@ let every_week_mon_and_tue = Recurrence::from_str(
 ).unwrap();
 ```
 <span id="monthly"></span>
-### Monthly Frequencies
+#### Monthly Frequencies
 Represents the rules for a recurrence that happens x times every x months.
 
 ```rust
+use std::str::FromStr;
+use rrules::Recurrence;
 let monthly = Recurrence::from_str(
     "FREQ=MONTHLY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z"
 ).unwrap();
 ```
 
 <span id="monthly-by-month-day"></span>
-#### Monthly by month day
+##### Monthly by month day
 
 When specifying `BYMONTHDAY`, it will only yield the dates that match the days of the month specified.
 
 ```rust
+use std::str::FromStr;
+use rrules::Recurrence;
 let every_15th = Recurrence::from_str(
     "FREQ=MONTHLY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z;BYMONTHDAY=15"
 ).unwrap();
 
-let every_15th_and_30th = Recurrence::from_str(
-    "FREQ=MONTHLY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z;BYMONTHDAY=15,30"
+let every_15th_and_25th = Recurrence::from_str(
+    "FREQ=MONTHLY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z;BYMONTHDAY=15,25"
 ).unwrap();
 ```
 
 <span id="monthly-by-day"></span>
-#### Monthly by nth day
+##### Monthly by nth day
 
 When specifying `BYDAY`, it will only yield the dates that match the nth days of the week specified.
 I.g. if you want to have a recurrence every first Monday of the month, you can do:
 
 ```rust
+use std::str::FromStr;
+use rrules::Recurrence;
 let every_first_monday = Recurrence::from_str(
     "FREQ=MONTHLY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z;BYDAY=1MO"
 ).unwrap();
@@ -203,23 +228,29 @@ let every_first_monday_and_wednesday = Recurrence::from_str(
 ```
 
 <span id="yearly"></span>
-### Yearly Frequencies
+#### Yearly Frequencies
 Represents the rules for a recurrence that happens x times every x years.
 
 ```rust
+use std::str::FromStr;
+use rrules::Recurrence;
 let yearly = Recurrence::from_str(
     "FREQ=YEARLY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z"
 ).unwrap();
 ```
 
 <span id="yearly-by-month-day"></span>
-#### Yearly by month day
-    
+##### Yearly by month day
+
 When specifying `BYMONTH` and `BYMONTHDAY`, it will only yield the dates that match the days of the month specified.
 E.g. if you want to have a recurrence every 15th January of the year, you can do:
-    
+
 ```rust
+use std::str::FromStr;
+use rrules::Recurrence;
 let every_15th_january = Recurrence::from_str(
     "FREQ=YEARLY;INTERVAL=1;DTSTART=2023-01-01T12:00:00Z;BYMONTH=1;BYMONTHDAY=15"
 ).unwrap();
 ```
+
+License: MIT

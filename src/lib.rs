@@ -256,5 +256,5 @@ extern crate core;
 mod frequencies;
 mod recurrences;
 mod utils;
-pub use recurrences::{Recurrence, RecurrenceInvalid};
 pub use frequencies::{Frequency, MonthlyDate, NthWeekday, Time};
+pub use recurrences::{Recurrence, RecurrenceInvalid};

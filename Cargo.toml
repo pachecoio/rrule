@@ -1,6 +1,6 @@
 [package]
 name = "rrules"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2021"
 description = "A library for working with recurrence rules"
 license = "MIT"
@@ -16,3 +16,6 @@ readme = "README.md"
 [dependencies]
 chrono = "0.4.23"
 regex = "1.7.1"
+
+[dev-dependencies]
+cargo-sonar = "0.14.1"

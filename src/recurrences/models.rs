@@ -107,7 +107,6 @@ impl Iterator for Recurrence {
     /// let second_event = recurrence.next().unwrap(); assert_eq!(second_event, DateTime::<Utc>::from_str("2023-01-02T12:00:00Z").unwrap());
     /// ```
     fn next(&mut self) -> Option<Self::Item> {
-
         if let Some(current_date) = self.current_date {
             if current_date > self.end {
                 return None;
@@ -120,8 +119,8 @@ impl Iterator for Recurrence {
                 Some(current_date)
             } else {
                 self.next()
-            }
+            };
         }
-        return None;
+        None
     }
 }

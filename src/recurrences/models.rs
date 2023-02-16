@@ -78,10 +78,14 @@ impl Recurrence {
         Ok(Recurrence {
             frequency,
             start,
-            current_date: None,
+            current_date: Some(start),
             end,
             duration,
         })
+    }
+
+    pub fn set_current_date(&mut self, current_date: Option<DateTime<Utc>>) {
+        self.current_date = current_date;
     }
 }
 
@@ -100,31 +104,24 @@ impl Iterator for Recurrence {
     /// let first_event = recurrence.next().unwrap();
     /// assert_eq!(first_event, DateTime::<Utc>::from_str("2023-01-01T12:00:00Z").unwrap());
     ///
-    /// let second_event = recurrence.next().unwrap();
-    /// assert_eq!(second_event, DateTime::<Utc>::from_str("2023-01-02T12:00:00Z").unwrap());
+    /// let second_event = recurrence.next().unwrap(); assert_eq!(second_event, DateTime::<Utc>::from_str("2023-01-02T12:00:00Z").unwrap());
     /// ```
     fn next(&mut self) -> Option<Self::Item> {
-        let current_date = match self.current_date {
-            None => {
-                // If current_date is None, this is the first call to next()
-                if self.frequency.contains(&self.start) {
-                    self.current_date = Some(self.start);
-                    return Some(self.start);
-                }
-                self.start
+
+        if let Some(current_date) = self.current_date {
+            if current_date > self.end {
+                return None;
             }
-            Some(current_date) => current_date,
-        };
-        // Get the next event date based on the current date and frequencies
-        match self.frequency.next_event(&current_date) {
-            Some(next_event) => {
-                if next_event > self.end {
-                    return None;
-                }
-                self.current_date = Some(next_event);
-                Some(next_event)
+
+            let next_event = self.frequency.next_event(&current_date);
+            self.set_current_date(next_event);
+
+            return if self.frequency.contains(&current_date) {
+                Some(current_date)
+            } else {
+                self.next()
             }
-            None => None,
         }
+        return None;
     }
 }
